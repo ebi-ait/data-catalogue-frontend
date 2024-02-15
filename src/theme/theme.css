@@ -11,6 +11,7 @@ button {
 
 
 /*
+todo Just a comment to explain, remove before merging
 css-in-js: css is managed inside jsx/tsx code, less files and context switching (eg. styled-component)
 css modules: better separation (eg. vanilla css modules)
 
