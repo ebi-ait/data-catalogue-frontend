@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import {JsonForms} from '@jsonforms/react';
 import {materialCells, materialRenderers} from '@jsonforms/material-renderers';
 import {REST_ENDPOINT_URL} from "./config";
+import style from "./Form.module.css";
 
 interface FormProps {
     schema: any;
@@ -40,7 +41,7 @@ const Form: React.FC<FormProps> = ({schema}) => {
                         cells={materialCells}
                         onChange={({data}) => setFormData(data)}
                     />
-                    <button onClick={handleSubmit}>Submit</button>
+                    <button className={style.submitButton} onClick={handleSubmit}>Submit</button>
                 </>
             )}
         </div>
