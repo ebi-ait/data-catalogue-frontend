@@ -8,19 +8,3 @@
 button {
     --color-secondary: #cba64f;
 }
-
-
-/*
-todo Just a comment to explain, remove before merging
-css-in-js: css is managed inside jsx/tsx code, less files and context switching (eg. styled-component)
-css modules: better separation (eg. vanilla css modules)
-
-
-const themeLight = {
-  colors: {
-    primary: '#141414',
-    ...
-  }
-}
-export default themeLight
-*/
