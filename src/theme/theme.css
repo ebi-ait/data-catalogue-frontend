@@ -1,0 +1,10 @@
+:root {
+    --color-main: #15a2e7;
+    --color-secondary: #deafe5;
+
+    --font-main: "DejaVu Sans", serif;
+}
+
+button {
+    --color-secondary: #cba64f;
+}
