@@ -1,0 +1,36 @@
+@import '../theme/theme.css';
+
+.MoreCellWrapper {
+    color: var(--color-font-primary);
+    background: var(--color-secondary);
+    font-family: var(--font-main);
+    display: block;
+}
+
+.MoreCellFirstItem {
+    /*float: left;*/
+    margin-right: 5px;
+}
+
+.MoreCellButtonWrapper {
+    /*float: left;*/
+}
+
+.MoreButton {
+    color:var(--color-font-link);
+    cursor: pointer;
+}
+
+.MorePopper {
+    padding: 5px;
+}
+
+.MorePopoverTitle {
+    font-weight: bold;
+    margin: 10px 10px 2px;
+}
+
+.MorePopoverValue {
+    color: var(--color-font-secondary);
+    margin: 1px 10px 10px;
+}

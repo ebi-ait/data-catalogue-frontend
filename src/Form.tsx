@@ -4,6 +4,7 @@ import {JsonForms} from '@jsonforms/react';
 import {materialCells, materialRenderers} from '@jsonforms/material-renderers';
 import {REST_ENDPOINT_URL} from "./config";
 import style from "./Form.module.css";
+import MoreCellRenderer from "./MoreCellRenderer/MoreCellRenderer";
 
 interface FormProps {
     schema: any;
@@ -42,6 +43,9 @@ const Form: React.FC<FormProps> = ({schema}) => {
                         onChange={({data}) => setFormData(data)}
                     />
                     <button className={style.submitButton} onClick={handleSubmit}>Submit</button>
+
+                    <MoreCellRenderer cellValues={["test", "help"]}></MoreCellRenderer>
+                    <MoreCellRenderer cellValues={["test"]}></MoreCellRenderer>
                 </>
             )}
         </div>
