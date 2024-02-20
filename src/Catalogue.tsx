@@ -7,7 +7,8 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
-import data from './custom.json';
+import { hide } from './Util';
+
 
 interface CatalogueProps {
     schema: any;
@@ -18,21 +19,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
     const fieldConfMap = {};
 
-    //TODO: remove this as it si not required
-    useEffect(() => {
-        Object.entries(data).map(([key, config]: [string, any]) => {
-            const fieldConfvalues = {};
-            Object.entries(config).map(([prop, value]: [string, any]) => {
-                // @ts-ignore
-                fieldConfvalues[prop] = value;
-            })
-            // @ts-ignore
-            fieldConfMap[key] = fieldConfvalues;
-        })
-        // @ts-ignore
-        console.log(fieldConfMap['dsIAfricaAffiliation'] + "---" + fieldConfMap['dsIAfricaAffiliation']['hide']);
-
-    }, []);
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -42,7 +28,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     field: key,
                     editable: true,
                     // @ts-ignore
-                    hide: (typeof data[key] === 'undefined' || data[key]['hide'] === 'undefined') ? false : data[key]['hide']
+                    hide:hide(key)
                 };
                 if(propertyDef.type === "array" && propertyDef.items?.type==='string') {
                     colDef.valueParser = params=> {
