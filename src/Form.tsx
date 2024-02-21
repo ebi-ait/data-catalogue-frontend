@@ -44,8 +44,8 @@ const Form: React.FC<FormProps> = ({schema}) => {
                     />
                     <button className={style.submitButton} onClick={handleSubmit}>Submit</button>
 
-                    <MoreCellRenderer cellValues={["test", "help"]}></MoreCellRenderer>
-                    <MoreCellRenderer cellValues={["test"]}></MoreCellRenderer>
+                    <MoreCellRenderer value={["test", "help"]}></MoreCellRenderer>
+                    <MoreCellRenderer value={["test"]}></MoreCellRenderer>
                 </>
             )}
         </div>

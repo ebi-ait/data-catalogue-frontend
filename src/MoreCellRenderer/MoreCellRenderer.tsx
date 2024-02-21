@@ -1,62 +1,68 @@
 import React from 'react';
 import style from "./MoreCellRenderer.module.css";
-
-
 import Popover from '@mui/material/Popover';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 
-export default function MoreCellRenderer({cellValues}: { cellValues: string[] }) {
-    const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
+interface MyState {
+    anchorEl: HTMLDivElement | null;
+}
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+export default class MoreCellRenderer extends React.Component<{ value: string[] }, MyState> {
+    constructor(props: any) {
+        super(props);
+        this.state = {
+            anchorEl: null
+        };
+    }
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    render() {
+        let {value} = this.props;
 
-    const open = Boolean(anchorEl);
-    const id = open ? 'simple-popover' : undefined;
+        const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+            this.setState({anchorEl: event.currentTarget});
+        };
 
-    let renderedCell;
-    // if (cellValues.length > 1) {
-    renderedCell = <div className={style.MoreCellWrapper}>
-        <div className={style.MoreCellFirstItem}>
-            {cellValues[0]}
-        </div>
-        {cellValues.length > 1 &&
-            <div className={style.MoreCellButtonWrapper}>
-                <div aria-describedby={id} onClick={handleClick} className={style.MoreButton}>
-                    +{cellValues.length - 1} more
-                </div>
-                <Popover
-                    id={id}
-                    open={open}
-                    anchorEl={anchorEl}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'left',
-                    }}
-                    className={style.MorePopper}
-                >
-                    {/*<Typography sx={{p: 2}}>The content of the Popover.</Typography>*/}
-                    {/*<div>{cellValues.map((val => <Typography sx={{p: 2}}>{val}</Typography>))}</div>*/}
-                    <div className={style.MorePopoverTitle}>{cellValues.length} values</div>
-                    <div className={style.MorePopoverValue}>{cellValues.map((val => <div key={val}>{val}</div>))}</div>
-                </Popover></div>}
-    </div>;
-    // } else {
-    //     renderedCell = <div aria-describedby={id} onClick={handleClick} className={style.MoreCell}>
-    //         {cellValues.join(', ')} single
-    //     </div>
-    // }
+        const handleClose = () => {
+            this.setState({anchorEl: null});
+        };
 
-    return (
-        <div>
-            {renderedCell}
-        </div>
-    );
+        const open = Boolean(this.state.anchorEl);
+        const id = open ? 'simple-popover' : undefined;
+
+        let renderedCell;
+        if (!value) {
+            return <div></div>
+        }
+        renderedCell = <div className={style.MoreCellWrapper}>
+            <div className={style.MoreCellFirstItem}>
+                {value[0]}
+            </div>
+            {value.length > 1 &&
+                <div className={style.MoreCellButtonWrapper}>
+                    <div aria-describedby={id} onClick={handleClick} className={style.MoreButton}>
+                        +{value.length - 1} more
+                    </div>
+                    <Popover
+                        id={id}
+                        open={open}
+                        anchorEl={this.state.anchorEl}
+                        onClose={handleClose}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                        }}
+                        className={style.MorePopper}
+                    >
+                        <div className={style.MorePopoverTitle}>{value.length} values</div>
+                        <div className={style.MorePopoverValues}>{value.map((val => <div
+                            className={style.MorePopoverValue}
+                            key={val}>{val}</div>))}</div>
+                    </Popover></div>}
+        </div>;
+
+        return (
+            <div>
+                {renderedCell}
+            </div>
+        );
+    }
 }

@@ -7,6 +7,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
+import MoreCellRenderer from "./MoreCellRenderer/MoreCellRenderer";
 
 
 interface CatalogueProps {
@@ -30,6 +31,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                         console.log(params.newValue)
                         return params.newValue.split(',');
                     };
+                    colDef.cellRenderer = MoreCellRenderer;
                 }
                 return colDef;
             }) : [];
