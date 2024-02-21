@@ -43,9 +43,6 @@ const Form: React.FC<FormProps> = ({schema}) => {
                         onChange={({data}) => setFormData(data)}
                     />
                     <button className={style.submitButton} onClick={handleSubmit}>Submit</button>
-
-                    <MoreCellRenderer value={["test", "help"]}></MoreCellRenderer>
-                    <MoreCellRenderer value={["test"]}></MoreCellRenderer>
                 </>
             )}
         </div>
