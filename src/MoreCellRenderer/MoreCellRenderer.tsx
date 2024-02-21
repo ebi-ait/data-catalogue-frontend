@@ -2,11 +2,11 @@ import React from 'react';
 import style from "./MoreCellRenderer.module.css";
 import Popover from '@mui/material/Popover';
 
-interface MyState {
+interface MoreCellRendererState {
     anchorEl: HTMLDivElement | null;
 }
 
-export default class MoreCellRenderer extends React.Component<{ value: string[] }, MyState> {
+export default class MoreCellRenderer extends React.Component<{ value: string[] }, MoreCellRendererState> {
     constructor(props: any) {
         super(props);
         this.state = {
