@@ -1,0 +1,7 @@
+@import './theme/theme.css';
+
+.CatalogueGrid {
+    --ag-background-color: var(--color-main);
+    --ag-odd-row-background-color: var(--color-grid-odd-row);
+}
+

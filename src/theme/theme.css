@@ -1,11 +1,14 @@
 :root {
-    --color-main: #15a2e7;
+    --color-main: #ffffff;
     --color-secondary: #deafe5;
     --color-background: #234345;
 
     --color-font-primary: #000000;
     --color-font-secondary: #444444;
     --color-font-link: #6a72cb;
+
+    /* grid colors */
+    --color-grid-odd-row: #e1e1e1;
 
     --font-main: "DejaVu Sans", serif;
 }
