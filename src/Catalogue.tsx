@@ -6,7 +6,10 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
+import {FILTER_FIELDS} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
+import { SideFilter } from './SideFilter';
+import Stack from "@mui/material/Stack";
 
 
 interface CatalogueProps {
@@ -15,6 +18,7 @@ interface CatalogueProps {
 
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
+    const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
     useEffect(() => {
@@ -44,6 +48,10 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             }
         };
         fetchData();
+        const setFilters = () => {
+           // rowData.map( rd -> rd.)
+        };
+
     }, [schema]);
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
         try {
@@ -67,6 +75,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         }
     };
     return (
+        <Stack direction="row" sx={{ gap: 3 }}>
+            <SideFilter />
         <div className="ag-theme-alpine" style={{height: '500px', width: '100%'}}>
             <AgGridReact
                 rowData={rowData}
@@ -74,10 +84,12 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 pagination={true}
                 paginationPageSize={10}
                 editType={'fullRow'}
+                sideBar={true}
                 onRowValueChanged={handleRowValueChanged}
 
             />
         </div>
+        </Stack>
     );
 };
 
