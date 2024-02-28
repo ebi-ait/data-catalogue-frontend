@@ -16,20 +16,14 @@ import {
     TextField
 } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
+import { filters } from './Catalogue';
 
 
-
-const filters = [
-    {
-        label: "Title",
-        options: ["sen test study", "newTest"]
-    },
-    {
-        label: "Acronym",
-        options: ["newTest", "newTestA"]
-    }
-];
-
+//filters format
+//{
+//                     "label": 'field name',
+//                     "options": value array
+//                 }
 export const SideFilter = () => {
     const [openFilters, setOpenFilters] = React.useState({});
     const [filterValues, setFilterValues] = React.useState({});

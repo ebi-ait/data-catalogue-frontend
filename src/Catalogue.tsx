@@ -15,7 +15,13 @@ import Stack from "@mui/material/Stack";
 interface CatalogueProps {
     schema: any;
 }
+export interface Filter {
+    label: string;
+    options: string[]
+}
 
+
+export let filters: Filter[] = [];
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
     const [filterData, setFilterData] = useState<any[]>([]);
@@ -49,10 +55,45 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         };
         fetchData();
         const setFilters = () => {
-           // rowData.map( rd -> rd.)
+            filters  = [];
+            let filterValues: string[];
+            let filterValueMap = new Map<string, number>();
+
+            FILTER_FIELDS.forEach(field => {
+                //value for a single title(filter) with count
+                filterValueMap = new Map<string, number>();
+                rowData.forEach(node => {
+                    let value = node[field.field] as string;
+                    value = value.trim();
+                    if (value) {
+                        if (filterValueMap.has(value)) {
+                            filterValueMap.set(value, filterValueMap.get(value)! + 1);
+                        } else {
+                            filterValueMap.set(value, 1);
+                        }
+                    }
+                });
+
+                filterValues = [];
+                filterValueMap.forEach((value: number, key: string) => {
+                    filterValues.push(key)
+                });
+
+                //TODO iterate filterValueMap and set filterValues
+                // @ts-ignore
+                if(filterValues) {
+                    filters.push({
+                        "label": field.field,
+                        "options": filterValues
+                    })
+                }
+            });
         };
+        setFilters();
 
     }, [schema]);
+
+
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
         try {
             console.log(`event data: ${JSON.stringify(event.data)}`)
