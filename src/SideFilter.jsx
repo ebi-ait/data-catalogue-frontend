@@ -1,6 +1,6 @@
 import * as React from "react";
 import {fetchCatalogueData} from './api';
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef} from "react";
 import {
     Autocomplete,
     Box,
@@ -16,7 +16,8 @@ import {
     TextField
 } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
-import { filters } from './Catalogue';
+import { filters, gridApi } from './Catalogue';
+import { filterCatalogueData } from './api';
 
 
 //filters format
@@ -24,9 +25,15 @@ import { filters } from './Catalogue';
 //                     "label": 'field name',
 //                     "options": value array
 //                 }
-export const SideFilter = () => {
+
+
+export const SideFilter = (props) => {
+    
     const [openFilters, setOpenFilters] = React.useState({});
     const [filterValues, setFilterValues] = React.useState({});
+
+    
+    
 
     const handleToggleFilter = (filterLabel) => {
         setOpenFilters((prevOpenFilters) => ({
@@ -47,6 +54,20 @@ export const SideFilter = () => {
         setFilterValues({});
     };
 
+    const applyFilters = () => {
+
+        console.log("Filtered data call:")
+            try {
+                const documents =  fetchCatalogueData();
+                console.log("Filtered data:"+documents)
+                props.api.setRowData(documents);
+
+            } catch (error) {
+                console.error('Error fetching catalogue data:', error);
+            }
+        
+        
+    };
 
     return (
         <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
@@ -70,17 +91,10 @@ export const SideFilter = () => {
                             <ListItemText primary={filter.label} />
 
                             {
-                                openFilters[filter.label] ? (
-                                <Remove />
-                            ) : (
-                                <Add  />
-                            )}
+                                openFilters[filter.label] ? (<Remove />) : (<Add  />)
+                            }
                         </ListItem>
-                        <Collapse
-                            in={openFilters[filter.label]}
-                            timeout="auto"
-                            unmountOnExit
-                        >
+                        <Collapse in={openFilters[filter.label]} timeout="auto" unmountOnExit>
 
                                 <ListItem sx={{ pl: 4 }}>
                                     <Autocomplete
@@ -105,6 +119,13 @@ export const SideFilter = () => {
                     </React.Fragment>
                 ))}
             </List>
+
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} >
+                <Button variant="contained"  onClick={applyFilters}>
+                    Apply Filters
+                </Button>
+            </Box>
+
         </Box>
     );
 };

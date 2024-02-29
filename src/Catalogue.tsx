@@ -1,5 +1,5 @@
 // Catalogue.tsx
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {AgGridReact} from 'ag-grid-react';
 import {ColDef, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -21,11 +21,17 @@ export interface Filter {
 }
 
 
+
 export let filters: Filter[] = [];
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
     const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
+    let gridApi = useRef(null);
+
+    const onGridReady = (params: { api: any; }) => {
+       gridApi  = params.api;
+     };
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -117,7 +123,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     };
     return (
         <Stack direction="row" sx={{ gap: 3 }}>
-            <SideFilter />
+            <SideFilter api = {gridApi}  />
         <div className="ag-theme-alpine" style={{height: '500px', width: '100%'}}>
             <AgGridReact
                 rowData={rowData}
@@ -126,6 +132,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 paginationPageSize={10}
                 editType={'fullRow'}
                 sideBar={true}
+                onGridReady={onGridReady}
                 onRowValueChanged={handleRowValueChanged}
 
             />
