@@ -1,41 +1,41 @@
 @import '../theme/theme.css';
 
-.MoreCellWrapper {
+.listCellWrapper {
     color: var(--color-font-primary);
     background: var(--color-secondary);
     font-family: var(--font-main);
     display: block;
 }
 
-.MoreCellFirstItem {
+.listCellFirstItem {
     float: left;
     margin-right: 5px;
 }
 
-.MoreCellButtonWrapper {
+.listCellButtonWrapper {
     float: left;
 }
 
-.MoreButton {
+.listCellButton {
     color:var(--color-font-link);
     cursor: pointer;
 }
 
-.MorePopper {
+.listCellPopper {
     padding: 5px;
 }
 
-.MorePopoverTitle {
+.listCellPopoverTitle {
     font-weight: bold;
     margin: 20px 20px 5px;
 }
 
-.MorePopoverValues {
+.listCellPopoverValues {
     color: var(--color-font-secondary);
     margin: 2px 20px 20px;
 }
 
-.MorePopoverValue {
+.listCellPopoverValue {
     color: var(--color-font-secondary);
     margin: 4px 0;
 }

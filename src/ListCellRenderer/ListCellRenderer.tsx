@@ -1,12 +1,12 @@
 import React from 'react';
-import style from "./MoreCellRenderer.module.css";
+import style from "./ListCellRenderer.module.css";
 import Popover from '@mui/material/Popover';
 
 interface MoreCellRendererState {
     anchorEl: HTMLDivElement | null;
 }
 
-export default class MoreCellRenderer extends React.Component<{ value: string[] }, MoreCellRendererState> {
+export default class ListCellRenderer extends React.Component<{ value: string[] }, MoreCellRendererState> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -32,13 +32,13 @@ export default class MoreCellRenderer extends React.Component<{ value: string[] 
         if (!value) {
             return <div></div>
         }
-        renderedCell = <div className={style.MoreCellWrapper}>
-            <div className={style.MoreCellFirstItem}>
+        renderedCell = <div className={style.listCellWrapper}>
+            <div className={style.listCellFirstItem}>
                 {value[0]}
             </div>
             {value.length > 1 &&
-                <div className={style.MoreCellButtonWrapper}>
-                    <div aria-describedby={id} onClick={handleClick} className={style.MoreButton}>
+                <div className={style.listCellButtonWrapper}>
+                    <div aria-describedby={id} onClick={handleClick} className={style.listCellButton}>
                         +{value.length - 1} more
                     </div>
                     <Popover
@@ -50,13 +50,14 @@ export default class MoreCellRenderer extends React.Component<{ value: string[] 
                             vertical: 'bottom',
                             horizontal: 'left',
                         }}
-                        className={style.MorePopper}
+                        className={style.listCellPopper}
                     >
-                        <div className={style.MorePopoverTitle}>{value.length} values</div>
-                        <div className={style.MorePopoverValues}>{value.map((val => <div
-                            className={style.MorePopoverValue}
+                        <div className={style.listCellPopoverTitle}>{value.length} values</div>
+                        <div className={style.listCellPopoverValues}>{value.map((val => <div
+                            className={style.listCellPopoverValue}
                             key={val}>{val}</div>))}</div>
-                    </Popover></div>}
+                    </Popover>
+                </div>}
         </div>;
 
         return (
