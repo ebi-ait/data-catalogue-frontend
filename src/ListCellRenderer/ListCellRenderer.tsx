@@ -3,14 +3,14 @@ import style from "./ListCellRenderer.module.css";
 import Popover from '@mui/material/Popover';
 
 interface MoreCellRendererState {
-    anchorEl: HTMLDivElement | null;
+    anchorElement: HTMLDivElement | null;
 }
 
 export default class ListCellRenderer extends React.Component<{ value: string[] }, MoreCellRendererState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            anchorEl: null
+            anchorElement: null
         };
     }
 
@@ -18,14 +18,14 @@ export default class ListCellRenderer extends React.Component<{ value: string[] 
         let {value} = this.props;
 
         const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-            this.setState({anchorEl: event.currentTarget});
+            this.setState({anchorElement: event.currentTarget});
         };
 
         const handleClose = () => {
-            this.setState({anchorEl: null});
+            this.setState({anchorElement: null});
         };
 
-        const open = Boolean(this.state.anchorEl);
+        const open = Boolean(this.state.anchorElement);
         const id = open ? 'simple-popover' : undefined;
 
         let renderedCell;
@@ -44,7 +44,7 @@ export default class ListCellRenderer extends React.Component<{ value: string[] 
                     <Popover
                         id={id}
                         open={open}
-                        anchorEl={this.state.anchorEl}
+                        anchorEl={this.state.anchorElement}
                         onClose={handleClose}
                         anchorOrigin={{
                             vertical: 'bottom',
