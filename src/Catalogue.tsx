@@ -7,7 +7,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
-import MoreCellRenderer from "./MoreCellRenderer/MoreCellRenderer";
+import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
 
 interface CatalogueProps {
@@ -26,12 +26,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     field: key,
                     editable: true
                 };
-                if(propertyDef.type === "array" && propertyDef.items?.type==='string') {
-                    colDef.valueParser = params=> {
-                        console.log(params.newValue)
-                        return params.newValue.split(',');
-                    };
-                    colDef.cellRenderer = MoreCellRenderer;
+                if (propertyDef.type === "array" && propertyDef.items?.type === 'string') {
+                    colDef.cellRenderer = ListCellRenderer;
                 }
                 return colDef;
             }) : [];
