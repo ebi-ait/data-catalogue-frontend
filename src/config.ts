@@ -13,6 +13,7 @@ export const GRID_CONFIG: ColumnConfiguration[] = [
         },
         {
             name: "description",
+            hide: true
         },
         {
             name: "keywords",
