@@ -1,0 +1,15 @@
+:root {
+    --color-main: #15a2e7;
+    --color-secondary: #deafe5;
+    --color-background: #234345;
+
+    --color-font-primary: #000000;
+    --color-font-secondary: #444444;
+    --color-font-link: #6a72cb;
+
+    --font-main: "DejaVu Sans", serif;
+}
+
+button {
+    --color-secondary: #cba64f;
+}

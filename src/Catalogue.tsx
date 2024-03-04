@@ -8,6 +8,7 @@ import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
 import { shouldHideColumn } from './Util';
+import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 
 
 interface CatalogueProps {
@@ -29,11 +30,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     editable: true,
                     hide: shouldHideColumn(key)
                 };
-                if(propertyDef.type === "array" && propertyDef.items?.type==='string') {
-                    colDef.valueParser = params=> {
-                        console.log(params.newValue)
-                        return params.newValue.split(',');
-                    };
+                if (propertyDef.type === "array" && propertyDef.items?.type === 'string') {
+                    colDef.cellRenderer = ListCellRenderer;
                 }
                 return colDef;
             }) : [];

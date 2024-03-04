@@ -1,0 +1,8 @@
+@import './theme/theme.css';
+
+.submitButton {
+    color: var(--color-main);
+    background: var(--color-secondary);
+    font-family: var(--font-main);
+    border: 2px solid red;
+}
