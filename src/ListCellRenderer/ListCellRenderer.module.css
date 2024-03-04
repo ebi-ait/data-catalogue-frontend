@@ -1,0 +1,41 @@
+@import '../theme/theme.css';
+
+.listCellWrapper {
+    color: var(--color-font-primary);
+    background: var(--color-secondary);
+    font-family: var(--font-main);
+    display: block;
+}
+
+.listCellFirstItem {
+    float: left;
+    margin-right: 5px;
+}
+
+.listCellButtonWrapper {
+    float: left;
+}
+
+.listCellButton {
+    color:var(--color-font-link);
+    cursor: pointer;
+}
+
+.listCellPopper {
+    padding: 5px;
+}
+
+.listCellPopoverTitle {
+    font-weight: bold;
+    margin: 20px 20px 5px;
+}
+
+.listCellPopoverValues {
+    color: var(--color-font-secondary);
+    margin: 2px 20px 20px;
+}
+
+.listCellPopoverValue {
+    color: var(--color-font-secondary);
+    margin: 4px 0;
+}
