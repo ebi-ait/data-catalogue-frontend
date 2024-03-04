@@ -1,6 +1,8 @@
 import {GRID_CONFIG} from './config';
-import { HIDE_COLUMN } from './config';
-export function hide(key: string): boolean {
-    // @ts-ignore
-    return (typeof GRID_CONFIG[key] === 'undefined' || GRID_CONFIG[key][HIDE_COLUMN] === 'undefined') ? false : GRID_CONFIG[key][HIDE_COLUMN];
+
+export function shouldHideColumn(column: string): boolean {
+    return GRID_CONFIG
+        .find(c=> c.name===column)  // find matching column
+        ?.hide // safely read the hide property
+        ?? false; // default
 }

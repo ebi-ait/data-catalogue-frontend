@@ -1,9 +1,22 @@
-import field_custom_config from './custom.json';
-export const REST_ENDPOINT_URL:string = 'http://127.0.0.1:5000/document';
-export const SCHEMA_ENDPOINT_URL:string = 'http://127.0.0.1:5000/document/schema';
+import {ColumnConfiguration} from "./types";
 
-export const RESOURCE_TYPE_PLURAL:string = 'documents';
+export const REST_ENDPOINT_URL: string = 'http://127.0.0.1:5002/document';
+export const SCHEMA_ENDPOINT_URL: string = 'http://127.0.0.1:5002/document/schema';
+export const RESOURCE_TYPE_PLURAL: string = 'documents'
 
-export const GRID_CONFIG = field_custom_config;
+export const GRID_CONFIG: ColumnConfiguration[] = [
+        {
+            name: "title",
+        },
+        {
+            name: "dsIAfricaAffiliation",
+        },
+        {
+            name: "description",
+        },
+        {
+            name: "keywords",
+        }
+    ]
+;
 
-export const HIDE_COLUMN:string = 'hide';

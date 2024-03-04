@@ -7,7 +7,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
-import { hide } from './Util';
+import { shouldHideColumn } from './Util';
 
 
 interface CatalogueProps {
@@ -27,8 +27,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     headerName: key.charAt(0).toUpperCase() + key.slice(1),
                     field: key,
                     editable: true,
-                    // @ts-ignore
-                    hide:hide(key)
+                    hide: shouldHideColumn(key)
                 };
                 if(propertyDef.type === "array" && propertyDef.items?.type==='string') {
                     colDef.valueParser = params=> {
