@@ -7,6 +7,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
+import { shouldHideColumn } from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 
 
@@ -17,6 +18,8 @@ interface CatalogueProps {
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
+    const fieldConfMap = {};
+
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -24,7 +27,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 let colDef: ColDef = {
                     headerName: key.charAt(0).toUpperCase() + key.slice(1),
                     field: key,
-                    editable: true
+                    editable: true,
+                    hide: shouldHideColumn(key)
                 };
                 if (propertyDef.type === "array" && propertyDef.items?.type === 'string') {
                     colDef.cellRenderer = ListCellRenderer;

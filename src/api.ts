@@ -1,5 +1,8 @@
 // api.ts
-import {RESOURCE_TYPE_PLURAL, REST_ENDPOINT_URL, SCHEMA_ENDPOINT_URL} from "./config";
+import {
+    RESOURCE_TYPE_PLURAL,
+    REST_ENDPOINT_URL,
+    SCHEMA_ENDPOINT_URL} from "./config";
 
 export const fetchSchema = async (): Promise<any> => {
     try {
