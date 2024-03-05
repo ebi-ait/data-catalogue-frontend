@@ -9,7 +9,7 @@ import {REST_ENDPOINT_URL} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
 import { shouldHideColumn } from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
-
+import catalogueStyle from "./Catalogue.module.css";
 
 interface CatalogueProps {
     schema: any;
@@ -69,7 +69,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         }
     };
     return (
-        <div className="ag-theme-alpine" style={{height: '500px', width: '100%'}}>
+        <div className={"ag-theme-alpine " +  catalogueStyle.CatalogueGrid}
+             style={{height: '500px', width: '100%'}}>
             <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}
