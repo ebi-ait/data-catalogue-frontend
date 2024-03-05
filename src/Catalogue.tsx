@@ -1,7 +1,7 @@
 // Catalogue.tsx
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {ColDef, RowValueChangedEvent} from 'ag-grid-community';
+import {ColDef, IRowNode, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
@@ -10,6 +10,7 @@ import {FILTER_FIELDS} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
 import { SideFilter } from './SideFilter';
 import Stack from "@mui/material/Stack";
+import {Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 
 
 interface CatalogueProps {
@@ -27,11 +28,9 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
     const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
-    let gridApi = useRef(null);
+    const gridRef = useRef<AgGridReact<any>>(null);
+    let filter:Filter = {label:'', options:[]};
 
-    const onGridReady = (params: { api: any; }) => {
-       gridApi  = params.api;
-     };
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -100,6 +99,30 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     }, [schema]);
 
 
+
+    const isExternalFilterPresent = useCallback((): boolean => {
+        return filter.label!='';
+    }, []);
+
+     const doesExternalFilterPass = useCallback(
+         (node: IRowNode<any>): boolean => {
+             if (node.data) {
+                 return (node.data.acronym== filter.options[0]);
+
+             }
+             return true;
+         },
+         [filter]
+     );
+
+
+
+    const externalFilterChanged = (event: SelectChangeEvent) => {
+        debugger
+
+        filter= {label:'acronym',options:[event.target.value as string]};
+        gridRef.current!.api.onFilterChanged();
+    };
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
         try {
             console.log(`event data: ${JSON.stringify(event.data)}`)
@@ -123,16 +146,31 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     };
     return (
         <Stack direction="row" sx={{ gap: 3 }}>
-            <SideFilter api = {gridApi}  />
+            <Box sx={{ minWidth: 120 }}>
+            <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="acronym"
+                    onChange= {externalFilterChanged}
+                >
+                    <MenuItem value={'sts'}>sts</MenuItem>
+                    <MenuItem value={'newTestA'}>newTestA</MenuItem>
+                </Select>
+            </FormControl>
+            </Box>
         <div className="ag-theme-alpine" style={{height: '500px', width: '100%'}}>
             <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}
+                ref={gridRef}
                 pagination={true}
                 paginationPageSize={10}
                 editType={'fullRow'}
                 sideBar={true}
-                onGridReady={onGridReady}
+                isExternalFilterPresent={isExternalFilterPresent}
+                doesExternalFilterPass={doesExternalFilterPass}
                 onRowValueChanged={handleRowValueChanged}
 
             />
