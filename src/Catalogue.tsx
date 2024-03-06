@@ -10,7 +10,16 @@ import {FILTER_FIELDS} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
 import { SideFilter } from './SideFilter';
 import Stack from "@mui/material/Stack";
-import {Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import {
+    Box,
+    FormControl,
+    InputLabel,
+    ListItem,
+    MenuItem,
+    Select,
+    SelectChangeEvent
+} from "@mui/material";
+import {Add, Remove } from '@mui/icons-material';
 
 
 interface CatalogueProps {
@@ -23,14 +32,16 @@ export interface Filter {
 
 
 
-export let filters: Filter[] = [];
+export let facets: Filter[] = [];
+let filtersToApply:Map<string, Filter> = new Map<string, Filter>();
+
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
     const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
-    let filter:Filter = {label:'', options:[]};
 
+    const [openFilters, setOpenFilters] = React.useState({});
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -60,7 +71,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         };
         fetchData();
         const setFilters = () => {
-            filters  = [];
+            facets  = [];
             let filterValues: string[];
             let filterValueMap = new Map<string, number>();
 
@@ -87,7 +98,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 //TODO iterate filterValueMap and set filterValues
                 // @ts-ignore
                 if(filterValues) {
-                    filters.push({
+                    facets.push({
                         "label": field.field,
                         "options": filterValues
                     })
@@ -101,28 +112,40 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
 
 
     const isExternalFilterPresent = useCallback((): boolean => {
-        return filter.label!='';
+        return filtersToApply.size > 0;
     }, []);
 
      const doesExternalFilterPass = useCallback(
          (node: IRowNode<any>): boolean => {
+             // now handling the case when already selected filter changed
+             let filterPass = false;
              if (node.data) {
-                 return (node.data.acronym== filter.options[0]);
+                     filtersToApply.forEach((filter, filterLabel) => {
+                         if(filterPass) {
+                            return true;
+                         }
+                         let record = node.data! as any;
+                         /*console.log(record[filter.label] +":filter.options.includes(record[filter.label] as string)"
+                             +filter.options.includes(record[filter.label] as string))*/
+                         filterPass = filter.options.includes(record[filter.label] as string);
 
+                     }
+                 );
              }
-             return true;
+             return filterPass;
          },
-         [filter]
+         [filtersToApply]
      );
 
 
 
     const externalFilterChanged = (event: SelectChangeEvent) => {
-        debugger
-
-        filter= {label:'acronym',options:[event.target.value as string]};
+        filtersToApply.set(event.target.name, {label:event.target.name,options:[event.target.value as string]});
         gridRef.current!.api.onFilterChanged();
     };
+
+
+
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
         try {
             console.log(`event data: ${JSON.stringify(event.data)}`)
@@ -146,19 +169,29 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     };
     return (
         <Stack direction="row" sx={{ gap: 3 }}>
-            <Box sx={{ minWidth: 120 }}>
-            <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Age</InputLabel>
-                <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="acronym"
-                    onChange= {externalFilterChanged}
-                >
-                    <MenuItem value={'sts'}>sts</MenuItem>
-                    <MenuItem value={'newTestA'}>newTestA</MenuItem>
-                </Select>
-            </FormControl>
+            <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
+
+                    <FormControl fullWidth >
+                        { facets.map((facet, index) => (
+                            <>
+                                    <ListItem sx={{ pl: 4 }} >
+                                        <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
+                                        <Select labelId="demo-simple-select-label"
+                                            id="demo-simple-select"
+                                            label={facet.label}
+                                            name={facet.label}
+                                            onChange={externalFilterChanged} >
+                                            {facet.options.map((option) => (
+                                                <MenuItem  key={option} value={option}>
+                                                    {option}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                     </ListItem>
+                            </>
+                     )) }
+                    </FormControl>
+
             </Box>
         <div className="ag-theme-alpine" style={{height: '500px', width: '100%'}}>
             <AgGridReact
