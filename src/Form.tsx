@@ -4,6 +4,7 @@ import {JsonForms} from '@jsonforms/react';
 import {materialCells, materialRenderers} from '@jsonforms/material-renderers';
 import {REST_ENDPOINT_URL} from "./config";
 import style from "./Form.module.css";
+import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 
 interface FormProps {
     schema: any;

@@ -20,7 +20,9 @@ import {
     SelectChangeEvent
 } from "@mui/material";
 import {Add, Remove } from '@mui/icons-material';
-
+import { shouldHideColumn } from './Util';
+import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
+import catalogueStyle from "./Catalogue.module.css";
 
 interface CatalogueProps {
     schema: any;
@@ -40,8 +42,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
+    const fieldConfMap = {};
 
-    const [openFilters, setOpenFilters] = React.useState({});
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -49,13 +51,11 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 let colDef: ColDef = {
                     headerName: key.charAt(0).toUpperCase() + key.slice(1),
                     field: key,
-                    editable: true
+                    editable: true,
+                    hide: shouldHideColumn(key)
                 };
-                if(propertyDef.type === "array" && propertyDef.items?.type==='string') {
-                    colDef.valueParser = params=> {
-                        console.log(params.newValue)
-                        return params.newValue.split(',');
-                    };
+                if (propertyDef.type === "array" && propertyDef.items?.type === 'string') {
+                    colDef.cellRenderer = ListCellRenderer;
                 }
                 return colDef;
             }) : [];
@@ -168,6 +168,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         }
     };
     return (
+
         <Stack direction="row" sx={{ gap: 3 }}>
             <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
 
@@ -193,7 +194,10 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     </FormControl>
 
             </Box>
-        <div className="ag-theme-alpine" style={{height: '500px', width: '100%'}}>
+
+        <div className={"ag-theme-alpine " +  catalogueStyle.CatalogueGrid}
+             style={{height: '500px', width: '100%'}}>
+
             <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}
