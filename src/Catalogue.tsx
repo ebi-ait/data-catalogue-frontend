@@ -1,12 +1,25 @@
 // Catalogue.tsx
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {ColDef, RowValueChangedEvent} from 'ag-grid-community';
+import {ColDef, IRowNode, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
 import {REST_ENDPOINT_URL} from "./config";
+import {FILTER_FIELDS} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
+import { SideFilter } from './SideFilter';
+import Stack from "@mui/material/Stack";
+import {
+    Box,
+    FormControl,
+    InputLabel,
+    ListItem,
+    MenuItem,
+    Select,
+    SelectChangeEvent
+} from "@mui/material";
+import {Add, Remove } from '@mui/icons-material';
 import { shouldHideColumn } from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
@@ -14,10 +27,21 @@ import catalogueStyle from "./Catalogue.module.css";
 interface CatalogueProps {
     schema: any;
 }
+export interface Filter {
+    label: string;
+    options: string[]
+}
+
+
+
+export let facets: Filter[] = [];
+let filtersToApply:Map<string, Filter> = new Map<string, Filter>();
 
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
+    const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
+    const gridRef = useRef<AgGridReact<any>>(null);
     const fieldConfMap = {};
 
 
@@ -46,7 +70,82 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             }
         };
         fetchData();
+        const setFilters = () => {
+            facets  = [];
+            let filterValues: string[];
+            let filterValueMap = new Map<string, number>();
+
+            FILTER_FIELDS.forEach(field => {
+                //value for a single title(filter) with count
+                filterValueMap = new Map<string, number>();
+                rowData.forEach(node => {
+                    let value = node[field.field] as string;
+                    value = value.trim();
+                    if (value) {
+                        if (filterValueMap.has(value)) {
+                            filterValueMap.set(value, filterValueMap.get(value)! + 1);
+                        } else {
+                            filterValueMap.set(value, 1);
+                        }
+                    }
+                });
+
+                filterValues = [];
+                filterValueMap.forEach((value: number, key: string) => {
+                    filterValues.push(key)
+                });
+
+                //TODO iterate filterValueMap and set filterValues
+                // @ts-ignore
+                if(filterValues) {
+                    facets.push({
+                        "label": field.field,
+                        "options": filterValues
+                    })
+                }
+            });
+        };
+        setFilters();
+
     }, [schema]);
+
+
+
+    const isExternalFilterPresent = useCallback((): boolean => {
+        return filtersToApply.size > 0;
+    }, []);
+
+     const doesExternalFilterPass = useCallback(
+         (node: IRowNode<any>): boolean => {
+             // now handling the case when already selected filter changed
+             let filterPass = false;
+             if (node.data) {
+                     filtersToApply.forEach((filter, filterLabel) => {
+                         if(filterPass) {
+                            return true;
+                         }
+                         let record = node.data! as any;
+                         /*console.log(record[filter.label] +":filter.options.includes(record[filter.label] as string)"
+                             +filter.options.includes(record[filter.label] as string))*/
+                         filterPass = filter.options.includes(record[filter.label] as string);
+
+                     }
+                 );
+             }
+             return filterPass;
+         },
+         [filtersToApply]
+     );
+
+
+
+    const externalFilterChanged = (event: SelectChangeEvent) => {
+        filtersToApply.set(event.target.name, {label:event.target.name,options:[event.target.value as string]});
+        gridRef.current!.api.onFilterChanged();
+    };
+
+
+
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
         try {
             console.log(`event data: ${JSON.stringify(event.data)}`)
@@ -69,18 +168,51 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         }
     };
     return (
+
+        <Stack direction="row" sx={{ gap: 3 }}>
+            <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
+
+                    <FormControl fullWidth >
+                        { facets.map((facet, index) => (
+                            <>
+                                    <ListItem sx={{ pl: 4 }} >
+                                        <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
+                                        <Select labelId="demo-simple-select-label"
+                                            id="demo-simple-select"
+                                            label={facet.label}
+                                            name={facet.label}
+                                            onChange={externalFilterChanged} >
+                                            {facet.options.map((option) => (
+                                                <MenuItem  key={option} value={option}>
+                                                    {option}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                     </ListItem>
+                            </>
+                     )) }
+                    </FormControl>
+
+            </Box>
+
         <div className={"ag-theme-alpine " +  catalogueStyle.CatalogueGrid}
              style={{height: '500px', width: '100%'}}>
+
             <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}
+                ref={gridRef}
                 pagination={true}
                 paginationPageSize={10}
                 editType={'fullRow'}
+                sideBar={true}
+                isExternalFilterPresent={isExternalFilterPresent}
+                doesExternalFilterPass={doesExternalFilterPass}
                 onRowValueChanged={handleRowValueChanged}
 
             />
         </div>
+        </Stack>
     );
 };
 
