@@ -1,9 +1,9 @@
 // App.tsx
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import Form from './Form';
 import Catalogue from './Catalogue';
-import { fetchSchema } from './api';
+import {fetchSchema} from './api';
 
 const App: React.FC = () => {
     const [schema, setSchema] = useState<any>(null);
@@ -21,12 +21,15 @@ const App: React.FC = () => {
     }, []);
 
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Form schema={schema} />} />
-                <Route path="/catalogue" element={<Catalogue schema={schema} />} />
-            </Routes>
-        </Router>
+        (schema ?
+                <Router>
+                    <Routes>
+                        <Route path="/" element={<Form schema={schema}/>}/>
+                        <Route path="/catalogue" element={<Catalogue schema={schema}/>}/>
+                    </Routes>
+                </Router>
+                : <div>Loading...</div>
+        )
     );
 };
 

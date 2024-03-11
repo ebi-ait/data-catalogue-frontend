@@ -2,7 +2,6 @@
 import React, {useState} from 'react';
 import {JsonForms} from '@jsonforms/react';
 import {materialCells, materialRenderers} from '@jsonforms/material-renderers';
-import {REST_ENDPOINT_URL} from "./config";
 import style from "./Form.module.css";
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 
@@ -10,11 +9,12 @@ interface FormProps {
     schema: any;
 }
 
+const config = window.config;
 const Form: React.FC<FormProps> = ({schema}) => {
     const [formData, setFormData] = useState<any>({});
     const handleSubmit = async () => {
         try {
-            const response = await fetch(REST_ENDPOINT_URL, {
+            const response = await fetch(config.REST_ENDPOINT_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

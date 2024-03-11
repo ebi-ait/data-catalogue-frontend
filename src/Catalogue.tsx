@@ -5,11 +5,12 @@ import {ColDef, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
-import {REST_ENDPOINT_URL} from "./config";
-import {JsonSchema7 } from '@jsonforms/core';
 import { shouldHideColumn } from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
+import {ColumnConfiguration} from "./types";
+
+const config = window?.config;
 
 interface CatalogueProps {
     schema: any;
@@ -21,20 +22,27 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const fieldConfMap = {};
 
 
+    function toTitleCase(key: string) {
+        return key.charAt(0).toUpperCase() + key.slice(1);
+    }
+
     useEffect(() => {
-        const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
-            .map(([key,propertyDef]:[string, any]) => {
-                let colDef: ColDef = {
-                    headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                    field: key,
-                    editable: true,
-                    hide: shouldHideColumn(key)
-                };
-                if (propertyDef.type === "array" && propertyDef.items?.type === 'string') {
-                    colDef.cellRenderer = ListCellRenderer;
-                }
-                return colDef;
-            }) : [];
+        const newColumnDefs: ColDef[] = config.GRID_CONFIG.map((columnConfig:ColumnConfiguration)=>{
+            let propertyDef = schema.properties[columnConfig.name]
+            let colDef: ColDef = {
+                headerName: toTitleCase(columnConfig.name),
+                field: columnConfig?.field ?? columnConfig.name,
+                editable: true,
+                hide: shouldHideColumn(columnConfig.name)
+            };
+            if ('valueGetter' in columnConfig) {
+                colDef.valueGetter = columnConfig.valueGetter;
+            }
+            if (propertyDef?.type === "array" && propertyDef?.items?.type === 'string') {
+                colDef.cellRenderer = ListCellRenderer;
+            }
+            return colDef;
+        });
         setColumnDefs(newColumnDefs);
 
         const fetchData = async () => {
@@ -52,7 +60,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             console.log(`event data: ${JSON.stringify(event.data)}`)
             const {data} = event;
             const id = data._id; // Assuming _id is the unique identifier for each document
-            const response = await fetch(`${REST_ENDPOINT_URL}/${id}`, {
+            const response = await fetch(`${config.REST_ENDPOINT_URL}/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

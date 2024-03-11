@@ -1,16 +1,27 @@
 // api.ts
-import {
-    RESOURCE_TYPE_PLURAL,
-    REST_ENDPOINT_URL,
-    SCHEMA_ENDPOINT_URL} from "./config";
+
+const config = window.config;
 
 export const fetchSchema = async (): Promise<any> => {
+    function fixSchemaIdAttribute(schemaData: { [x: string]: any; id: any; }) {
+        if ('id' in schemaData) {
+            schemaData['$id'] = schemaData['id']
+            delete schemaData.id
+        }
+    }
+
     try {
-        const response = await fetch(SCHEMA_ENDPOINT_URL);
+        const response = await fetch(config.SCHEMA_ENDPOINT_URL,
+            {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
         if (!response.ok) {
             throw new Error('Failed to fetch schema data');
         }
         const schemaData = await response.json();
+        fixSchemaIdAttribute(schemaData);
         return schemaData;
     } catch (error) {
         console.error('Error fetching schema data:', error);
@@ -20,12 +31,21 @@ export const fetchSchema = async (): Promise<any> => {
 
 export const fetchCatalogueData = async (): Promise<any[]> => {
     try {
-        const response = await fetch(REST_ENDPOINT_URL);
+        const response = await fetch(config.REST_ENDPOINT_URL,
+            {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
         if (!response.ok) {
             throw new Error('Failed to fetch catalogue data');
         }
         const data = await response.json();
-        const documents = data?._embedded[RESOURCE_TYPE_PLURAL] ?? [];
+        // const documents = data?._embedded[window.config.RESOURCE_TYPE_PLURAL] ?? [];
+        const documents = window.config.RESOURCE_JSON_PATH
+            .split('.')
+            .reduce((result:any, current:string) => result[current], data)
+
         return documents;
     } catch (error) {
         console.error('Error fetching catalogue data:', error);

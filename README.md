@@ -1,4 +1,7 @@
-# Getting Started with Create React App
+# Data Catalogue
+## Architecture
+The data catalogue is a client side web app that 
+## Development
 
 - This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 - The grid is implemented using ag-grid
