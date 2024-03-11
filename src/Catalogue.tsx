@@ -10,17 +10,30 @@ import {FILTER_FIELDS} from "./config";
 import {JsonSchema7 } from '@jsonforms/core';
 import { SideFilter } from './SideFilter';
 import Stack from "@mui/material/Stack";
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MenuIcon from "@mui/icons-material/Menu";
 import {
     Box,
     Button,
+    Collapse,
+    CssBaseline,
+    Divider,
     Drawer,
     FormControl,
+    IconButton,
     InputLabel,
     List,
     ListItem,
+    ListItemText,
     MenuItem,
     Select,
-    SelectChangeEvent
+    SelectChangeEvent,
+    styled,
+    Toolbar,
+    Typography,
+    useTheme
 } from "@mui/material";
 import {Add, Remove } from '@mui/icons-material';
 import { shouldHideColumn } from './Util';
@@ -35,6 +48,56 @@ export interface Filter {
     options: string[]
 }
 
+interface AppBarProps extends MuiAppBarProps {
+    open?: boolean;
+}
+
+const drawerWidth = 240;
+
+const AppBar = styled(MuiAppBar, {
+    shouldForwardProp: (prop) => prop !== "open",
+})<AppBarProps>(({ theme, open }) => ({
+    transition: theme.transitions.create(["margin", "width"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+    }),
+    ...(open && {
+        width: `calc(100% - ${drawerWidth}px)`,
+        marginLeft: `${drawerWidth}px`,
+        transition: theme.transitions.create(["margin", "width"], {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    }),
+}));
+
+const DrawerHeader = styled("div")(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: "flex-end",
+}));
+
+const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
+    open?: boolean;
+}>(({ theme, open }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create("margin", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: `-${drawerWidth}px`,
+    ...(open && {
+        transition: theme.transitions.create("margin", {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+        marginLeft: 0,
+    }),
+}));
 
 
 export let facets: Filter[] = [];
@@ -46,7 +109,10 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const fieldConfMap = {};
+    const [openFilters, setOpenFilters] = React.useState({});
+    const [filterValues, setFilterValues] = React.useState({});
 
+    const theme = useTheme();
     const [open, setOpen] = React.useState(false);
 
 
@@ -122,6 +188,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         return filtersToApply.size > 0;
     }, []);
 
+
      const doesExternalFilterPass = useCallback(
          (node: IRowNode<any>): boolean => {
 
@@ -150,13 +217,31 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     };
 
     const handleResetAll = () => {
-       /* setOpenFilters({});
-        setFilterValues({});*/
+        filtersToApply =  new Map<string, Filter>();
+        gridRef.current!.api.onFilterChanged();
+        setOpenFilters({});
+        setFilterValues({});
     };
+
 
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
+    };
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setOpen(false);
+    };
+    const handleToggleFilter = (filterLabel:string) => {
+
+        setOpenFilters((prevOpenFilters) => ({
+            ...prevOpenFilters,
+            [filterLabel]: // @ts-ignore
+             !prevOpenFilters[filterLabel]
+        }));
     };
 
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
@@ -180,16 +265,54 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             // Optionally, handle error (e.g., show error message)
         }
     };
+    // @ts-ignore
+
     return (
         <>
+            <Box sx={{ display: "flex" }}>
 
-        <Stack direction="row" sx={{ gap: 3 }}>
-            <Button onClick={toggleDrawer(true)}>Open Filters</Button>
-            <Drawer open={open} onClose={toggleDrawer(false)}>
-                <Box fontSize="h6.fontSize" fontWeight="bold">
-                    Filters
-                </Box>
-                <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
+            <CssBaseline />
+            <AppBar position="fixed" open={open}>
+                <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        onClick={handleDrawerOpen}
+                        edge="start"
+                        sx={{ mr: 2, ...(open && { display: "none" }) }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant="h6" noWrap component="div">
+                        Data Catalogue
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+
+
+            <Drawer  sx={{
+                width: drawerWidth,
+                flexShrink: 0,
+                "& .MuiDrawer-paper": {
+                    width: drawerWidth,
+                    boxSizing: "border-box",
+                },
+            }}
+                     variant="persistent"
+                     anchor="left"
+                     open={open} >
+
+
+                <DrawerHeader>
+                    <IconButton onClick={handleDrawerClose}>Filters
+                            <ChevronLeftIcon />
+                    </IconButton>
+                </DrawerHeader>
+
+                <Divider />
+
+
+                <Box >
 
                     <Box
                         display="flex"
@@ -207,6 +330,24 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                             { facets.map((facet, index) => (
 
                                     <React.Fragment key={facet.label}>
+
+                                        <ListItem button onClick={() => handleToggleFilter(facet.label)}>
+                                            <ListItemText primary={facet.label} />
+                                            {// @ts-ignore
+                                                openFilters[facet.label] ? (
+                                                <Remove  />
+                                            ) : (
+                                                <Add  />
+                                            )}
+                                        </ListItem>
+
+                                        <Collapse
+                                            in={
+                                                // @ts-ignore
+                                            openFilters[facet.label] }
+                                            timeout="auto"
+                                            unmountOnExit
+                                        >
                                         <ListItem sx={{ pl: 4 }} >
                                             <FormControl fullWidth>
                                             <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
@@ -223,6 +364,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                             </Select>
                                             </FormControl>
                                          </ListItem>
+                                        </Collapse>
                                     </React.Fragment>
 
                          )) }
@@ -231,24 +373,25 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 </Box>
             </Drawer>
 
-        <div className={"ag-theme-alpine " +  catalogueStyle.CatalogueGrid}
-             style={{height: '500px', width: '100%'}}>
+                <Main open={open} className={"ag-theme-alpine " +  catalogueStyle.CatalogueGrid}
+                      style={{height: '500px', width: '100%'}} >
+                    <DrawerHeader />
+                    <AgGridReact
+                        rowData={rowData}
+                        columnDefs={columnDefs}
+                        ref={gridRef}
+                        pagination={true}
+                        paginationPageSize={10}
+                        editType={'fullRow'}
+                        sideBar={true}
+                        isExternalFilterPresent={isExternalFilterPresent}
+                        doesExternalFilterPass={doesExternalFilterPass}
+                        onRowValueChanged={handleRowValueChanged}
 
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                ref={gridRef}
-                pagination={true}
-                paginationPageSize={10}
-                editType={'fullRow'}
-                sideBar={true}
-                isExternalFilterPresent={isExternalFilterPresent}
-                doesExternalFilterPass={doesExternalFilterPass}
-                onRowValueChanged={handleRowValueChanged}
+                    />
+                </Main>
 
-            />
-        </div>
-        </Stack>
+            </Box>
         </>
     );
 };
