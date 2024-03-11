@@ -1,44 +1,66 @@
 # Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- The grid is implemented using ag-grid
+- configuration is done by setting values in a file in the public folder.
 
-## Available Scripts
+### Run locally
+* install node see package.json for supported node version. 
+* install: run `npm install`
+* start the app: `npm start`
+* view the app: Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+* test: run `npm test` to launch the test runner in the interactive watch mode. See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-In the project directory, you can run:
+## configuration
+This app allows configuring the following:
+- data location - as json endpoint
+- styling - as css
+- grid behaviour - filters, columns, cell rendering
 
-### `npm start`
+The configuration will be files in the public directory, that will be provided for each project's deployment environment.
+In a k8s environment the config files will be configmaps mounted as files in the container running the app.
+See [this article about runtime configuration for react](https://profinit.eu/en/blog/build-once-deploy-many-in-react-dynamic-configuration-properties/)
+See the diagram below.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Deployment
+* The react app is built and copied to a nginx server that is packaged as a docker image. See [./Dockerfile](./Dockerfile)
+* The app gets its configuration from the config.js file in the public directory. See [](./public/config.js)
+* The nginx server proxies requests to 3rd party services where the data is stored on.
+* This app image is deployed to a k8s cluster
+* The configuration file as defined as a configmap and mounted so that the app has access to it.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The following diagram summarizes this:
+```mermaid
+---
+title: Data Catalogue Deployment
+---
+flowchart LR
 
-### `npm test`
+    subgraph k8s
+        subgraph k8s namespace
+            subgraph nginx container
+                CF[public/config.js]
+                A[React App] -->|read configuration|CF
+                subgraph nginx server
+                    P[Proxy]
+                end
+                A --> |read data| P
+            end
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+            subgraph configmap
+                CF --> | mount | CFM[cataloge config]
+            end
+        end
+    end
 
-### `npm run build`
+    subgraph 3rd party source e.g. biosamples
+        DJ[data endpoint]
+        SJ[schema endpoint]
+        P[Proxy] -->DJ
+        P[Proxy] -->SJ
+    end
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
+```
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
