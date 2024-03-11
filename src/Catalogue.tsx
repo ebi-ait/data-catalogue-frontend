@@ -12,8 +12,11 @@ import { SideFilter } from './SideFilter';
 import Stack from "@mui/material/Stack";
 import {
     Box,
+    Button,
+    Drawer,
     FormControl,
     InputLabel,
+    List,
     ListItem,
     MenuItem,
     Select,
@@ -44,6 +47,9 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const fieldConfMap = {};
 
+    const [open, setOpen] = React.useState(false);
+
+
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -52,6 +58,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     headerName: key.charAt(0).toUpperCase() + key.slice(1),
                     field: key,
                     editable: true,
+                    filter: true,
                     hide: shouldHideColumn(key)
                 };
                 if (propertyDef.type === "array" && propertyDef.items?.type === 'string') {
@@ -117,18 +124,16 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
 
      const doesExternalFilterPass = useCallback(
          (node: IRowNode<any>): boolean => {
-             // now handling the case when already selected filter changed
-             let filterPass = false;
+
+             let filterPass = true;
              if (node.data) {
                      filtersToApply.forEach((filter, filterLabel) => {
-                         if(filterPass) {
-                            return true;
-                         }
                          let record = node.data! as any;
                          /*console.log(record[filter.label] +":filter.options.includes(record[filter.label] as string)"
                              +filter.options.includes(record[filter.label] as string))*/
-                         filterPass = filter.options.includes(record[filter.label] as string);
-
+                         if(!filter.options.includes(record[filter.label] as string)) {
+                             filterPass = false;
+                         }
                      }
                  );
              }
@@ -144,7 +149,15 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         gridRef.current!.api.onFilterChanged();
     };
 
+    const handleResetAll = () => {
+       /* setOpenFilters({});
+        setFilterValues({});*/
+    };
 
+
+    const toggleDrawer = (newOpen: boolean) => () => {
+        setOpen(newOpen);
+    };
 
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
         try {
@@ -168,32 +181,55 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         }
     };
     return (
+        <>
 
         <Stack direction="row" sx={{ gap: 3 }}>
-            <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
+            <Button onClick={toggleDrawer(true)}>Open Filters</Button>
+            <Drawer open={open} onClose={toggleDrawer(false)}>
+                <Box fontSize="h6.fontSize" fontWeight="bold">
+                    Filters
+                </Box>
+                <Box sx={{ bgcolor: "#F5F5F5", width: "212px", p: "24px" }}>
 
-                    <FormControl fullWidth >
-                        { facets.map((facet, index) => (
-                            <>
-                                    <ListItem sx={{ pl: 4 }} >
-                                        <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
-                                        <Select labelId="demo-simple-select-label"
-                                            id="demo-simple-select"
-                                            label={facet.label}
-                                            name={facet.label}
-                                            onChange={externalFilterChanged} >
-                                            {facet.options.map((option) => (
-                                                <MenuItem  key={option} value={option}>
-                                                    {option}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                     </ListItem>
-                            </>
-                     )) }
-                    </FormControl>
+                    <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        mb={2}
+                    >
 
-            </Box>
+                        <Button variant="text" color="primary" onClick={handleResetAll}>
+                            Reset All
+                        </Button>
+                    </Box>
+
+                    <List>
+                            { facets.map((facet, index) => (
+
+                                    <React.Fragment key={facet.label}>
+                                        <ListItem sx={{ pl: 4 }} >
+                                            <FormControl fullWidth>
+                                            <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
+                                            <Select labelId="demo-simple-select-label"
+                                                id="demo-simple-select"
+                                                label={facet.label}
+                                                name={facet.label}
+                                                onChange={externalFilterChanged} >
+                                                {facet.options.map((option) => (
+                                                    <MenuItem  key={option} value={option}>
+                                                        {option}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            </FormControl>
+                                         </ListItem>
+                                    </React.Fragment>
+
+                         )) }
+                        </List>
+
+                </Box>
+            </Drawer>
 
         <div className={"ag-theme-alpine " +  catalogueStyle.CatalogueGrid}
              style={{height: '500px', width: '100%'}}>
@@ -213,6 +249,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             />
         </div>
         </Stack>
+        </>
     );
 };
 
