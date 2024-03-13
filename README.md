@@ -39,19 +39,29 @@ title: Data Catalogue Deployment
 ---
 flowchart LR
 
-    subgraph k8s
+    Client --> |"ebi.ac.uk/catalogue\nor wwwdev"|LB
+    LB[fa:fa-sitemap LB]  --> Service
+    Service --> App
+    
+    subgraph WebProd
+        LB
+    end
+
+    subgraph k8s cluster
         subgraph k8s namespace
+            Service
             subgraph nginx container
-                CF[public/config.js]
-                A[React App] -->|read configuration|CF
+                
+                ConfigFile[public/config.js]
+                App[React App] -->|read configuration|ConfigFile
                 subgraph nginx server
                     P[Proxy]
                 end
-                A --> |read data| P
+                App --> |read data| P
             end
 
             subgraph configmap
-                CF --> | mount | CFM[cataloge config]
+                ConfigFile --> | mount | ConfigMap[catalogue config]
             end
         end
     end
@@ -62,6 +72,16 @@ flowchart LR
         P[Proxy] -->DJ
         P[Proxy] -->SJ
     end
+    
+    %% styling definitions
+    classDef plain fill:#ddd,stroke:#fff,stroke-width:4px,color:#000;
+    classDef k8s fill:#326ce5,stroke:#fff,stroke-width:4px,color:#fff;
+    classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
+    
+    %% Styling application   
+    class App,Service,ConfigMap k8s;
+    class Client plain;
+    class k8s cluster;
 
 ```
 ## Learn More
