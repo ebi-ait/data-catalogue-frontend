@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-catalogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-catalogue
+  template:
+    metadata:
+      labels:
+        app: data-catalogue
+    spec:
+      containers:
+        - name: data-catalogue-app
+          image: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app-config-volume
+              mountPath: /usr/share/nginx/html/config.js
+              readOnly: true
+              subPath: config.js
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/conf.d/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: app-config-volume
+          configMap:
+            name: app-config-demo
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config

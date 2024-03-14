@@ -26,30 +26,36 @@ See [this article about runtime configuration for react](https://profinit.eu/en/
 See the diagram below.
 
 ## Deployment
-* The react app is built and copied to a nginx server that is packaged as a docker image. See [./Dockerfile](./Dockerfile)
+* The React app is built and copied to a nginx server that is packaged as a docker image. See [./Dockerfile](./Dockerfile)
 * The app gets its configuration from the config.js file in the public directory. See [](./public/config.js)
 * The nginx server proxies requests to 3rd party services where the data is stored on.
 * This app image is deployed to a k8s cluster
 * The configuration file as defined as a configmap and mounted so that the app has access to it.
+* External network traffix is mapped to the Ingres controller on the cluster
+* Ingress controller maps traffix to the service
 
 The following diagram summarizes this:
 ```mermaid
 ---
 title: Data Catalogue Deployment
 ---
-flowchart LR
+graph LR
 
-    Client --> |"ebi.ac.uk/catalogue\nor wwwdev"|LB
-    LB[fa:fa-sitemap LB]  --> Service
-    Service --> App
+    Client --> |"ebi.ac.uk/catalogue/&lt;project&gt;\nor wwwdev"|LB
+    LB[fa:fa-sitemap LB]  --> Ingress
     
     subgraph WebProd
         LB
     end
 
     subgraph k8s cluster
-        subgraph k8s namespace
-            Service
+        subgraph ingress namespace
+            Ingress
+            IngressConfigMap
+        end
+        subgraph "catalogue-demo (k8s namespace)"
+            Service --> App
+
             subgraph nginx container
                 
                 ConfigFile[public/config.js]
@@ -63,6 +69,22 @@ flowchart LR
             subgraph configmap
                 ConfigFile --> | mount | ConfigMap[catalogue config]
             end
+            Ingress --> | map /project1 to service|Service
+            class App,Service,ConfigMap k8s;
+        end
+        subgraph "2nd catalogue project (k8s namespace)"
+            
+            ConfigMap2
+            Service2
+            Service2 --> App2
+            App2 --> ConfigMap2
+            subgraph nginx container 2
+                App2
+            end
+            
+            Ingress --> | map /project2 to service|Service2
+
+            class App2,Service2,ConfigMap2 k8s;
         end
     end
 
@@ -79,7 +101,7 @@ flowchart LR
     classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
     
     %% Styling application   
-    class App,Service,ConfigMap k8s;
+    
     class Client plain;
     class k8s cluster;
 
