@@ -23,7 +23,9 @@ export const GRID_CONFIG: ColumnConfiguration[] = [
 ;
 
 export const FILTER_FIELDS = [ {
-    field: "title"
+    field: "title",
+    type:"select"
 }, {
-    field: "acronym"
+    field: "acronym",
+    type:"checkbox"
 } ]

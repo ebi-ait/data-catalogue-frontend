@@ -17,6 +17,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import {
     Box,
     Button,
+    Checkbox,
     Collapse,
     CssBaseline,
     Divider,
@@ -45,6 +46,12 @@ interface CatalogueProps {
 }
 export interface Filter {
     label: string;
+    options: string[]
+}
+
+export interface Facet {
+    label: string;
+    type: string;
     options: string[]
 }
 
@@ -100,7 +107,7 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
 }));
 
 
-export let facets: Filter[] = [];
+export let facets: Facet[] = [];
 let filtersToApply:Map<string, Filter> = new Map<string, Filter>();
 
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
@@ -110,12 +117,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const fieldConfMap = {};
     const [openFilters, setOpenFilters] = React.useState({});
-    const [filterValues, setFilterValues] = React.useState({});
-
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
-
-
 
     useEffect(() => {
         const newColumnDefs: ColDef[] = schema ? Object.entries(schema.properties)
@@ -145,7 +148,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         fetchData();
         const setFilters = () => {
             facets  = [];
-            let filterValues: string[];
+            let filterVals: string[];
             let filterValueMap = new Map<string, number>();
 
             FILTER_FIELDS.forEach(field => {
@@ -163,17 +166,16 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     }
                 });
 
-                filterValues = [];
+                filterVals = [];
                 filterValueMap.forEach((value: number, key: string) => {
-                    filterValues.push(key)
+                    filterVals.push(key)
                 });
-
-                //TODO iterate filterValueMap and set filterValues
-                // @ts-ignore
-                if(filterValues) {
+                filterVals.sort();
+                if(filterVals) {
                     facets.push({
                         "label": field.field,
-                        "options": filterValues
+                        "type": field.type,
+                        "options": filterVals
                     })
                 }
             });
@@ -181,8 +183,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         setFilters();
 
     }, [schema]);
-
-
 
     const isExternalFilterPresent = useCallback((): boolean => {
         return filtersToApply.size > 0;
@@ -196,8 +196,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
              if (node.data) {
                      filtersToApply.forEach((filter, filterLabel) => {
                          let record = node.data! as any;
-                         /*console.log(record[filter.label] +":filter.options.includes(record[filter.label] as string)"
-                             +filter.options.includes(record[filter.label] as string))*/
                          if(!filter.options.includes(record[filter.label] as string)) {
                              filterPass = false;
                          }
@@ -209,25 +207,38 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
          [filtersToApply]
      );
 
-
-
     const externalFilterChanged = (event: SelectChangeEvent) => {
         filtersToApply.set(event.target.name, {label:event.target.name,options:[event.target.value as string]});
         gridRef.current!.api.onFilterChanged();
     };
 
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        debugger
+        if(event.target.checked) {
+            if(filtersToApply.get(event.target.name)) {
+                filtersToApply.get(event.target.name)?.options.push(event.target.value as string);
+            } else {
+                filtersToApply.set(event.target.name, {label: event.target.name, options: [event.target.value as string]});
+            }
+        } else {
+            let uncheckedArr = filtersToApply.get(event.target.name)?.options.filter((value, index) =>
+                value != event.target.value
+            );
+            if (!Array.isArray(uncheckedArr) || !uncheckedArr.length) {
+                filtersToApply.delete(event.target.name);
+            } else {
+                filtersToApply.set(event.target.name, {label: event.target.name, options: uncheckedArr});
+            }
+        }
+        gridRef.current!.api.onFilterChanged();
+    };
     const handleResetAll = () => {
         filtersToApply =  new Map<string, Filter>();
         gridRef.current!.api.onFilterChanged();
         setOpenFilters({});
-        setFilterValues({});
     };
 
 
-
-    const toggleDrawer = (newOpen: boolean) => () => {
-        setOpen(newOpen);
-    };
     const handleDrawerOpen = () => {
         setOpen(true);
     };
@@ -318,8 +329,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                         display="flex"
                         justifyContent="space-between"
                         alignItems="center"
-                        mb={2}
-                    >
+                        mb={2} >
 
                         <Button variant="text" color="primary" onClick={handleResetAll}>
                             Reset All
@@ -348,6 +358,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                             timeout="auto"
                                             unmountOnExit
                                         >
+                                            {facet.type === "select" && (
                                         <ListItem sx={{ pl: 4 }} >
                                             <FormControl fullWidth>
                                             <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
@@ -364,6 +375,28 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                             </Select>
                                             </FormControl>
                                          </ListItem>
+                                            )}
+                                            {facet.type === "checkbox" && (
+                                                <List component="div" disablePadding>
+                                                    {facet.options.map((option: string) => (
+                                                        <ListItem key={option} button sx={{ pl: 4 }}>
+                                                            <Checkbox
+                                                                checked= { filtersToApply.get(facet.label)?.options.includes(option)}
+                                                                onChange={handleCheckboxChange}
+                                                                name={facet.label}
+                                                                value={option}
+                                                                sx={{
+                                                                    "&.Mui-checked": {
+                                                                        color: "red"
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <ListItemText primary={option} />
+                                                        </ListItem>
+                                                    ))}
+                                                </List>
+                                            )}
+
                                         </Collapse>
                                     </React.Fragment>
 
