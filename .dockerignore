@@ -2,6 +2,7 @@ node_modules/
 docs/
 build/
 .idea/
+k8s/
 npm-debug.log
 .dockerignore
 .git
