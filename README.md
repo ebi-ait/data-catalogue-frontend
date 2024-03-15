@@ -1,6 +1,8 @@
 # Data Catalogue
 ## Architecture
-The data catalogue is a client side web app that 
+The data catalogue is a client side web app that presents data from an 
+API in json format, allows searching, filtering and other types exploration.
+
 ## Development
 
 - This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -13,6 +15,12 @@ The data catalogue is a client side web app that
 * start the app: `npm start`
 * view the app: Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 * test: run `npm test` to launch the test runner in the interactive watch mode. See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### Learn More about React
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
 
 ## configuration
 This app allows configuring the following:
@@ -106,8 +114,21 @@ graph LR
     class k8s cluster;
 
 ```
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Deploying New Catalogues
+In order to create a catalogue for a new project you would need to
+follow these steps:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### on k8s
+1. create the configuration files.
+2. connect to the k8s cluster 
+3. create a namespace
+4. run `kustomize` and deploy the configuration to your namespace
+5. test your app
+
+### on docker
+1. setup up a runtime environment such as the k8s setup mentioned earlier
+   or allocate a vm with docker on it.
+2get the configuration files to the runtime machine and map the config file s
+     at the correct locations.
+
