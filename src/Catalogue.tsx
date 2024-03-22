@@ -62,6 +62,7 @@ interface AppBarProps extends MuiAppBarProps {
 }
 
 const drawerWidth = 240;
+const SELECT_DUMMY_VALUE = "---none---";
 
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== "open",
@@ -191,6 +192,9 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
 
 
                 filterVals = [];
+                if(field.type === "select") {
+                    filterVals.push(SELECT_DUMMY_VALUE);
+                }
                 filterValueMap.forEach((value: number, key: string) => {
                     filterVals.push(key)
                 });
@@ -263,7 +267,14 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
      );
 
     const externalFilterChanged = (event: SelectChangeEvent<unknown>, data_type:string) => {
-        filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: [event.target.value as string]});
+        debugger
+        if(event.target.value === SELECT_DUMMY_VALUE) {
+            if( filtersToApply.has(event.target.name)) {
+                filtersToApply.delete(event.target.name);
+            }
+        } else {
+            filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: [event.target.value as string]});
+        }
         gridRef.current!.api.onFilterChanged();
     };
 
