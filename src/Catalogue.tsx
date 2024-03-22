@@ -152,7 +152,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             facets  = [];
             let filterVals: string[];
             let filterValueMap = new Map<string, number>();
-debugger
             FILTER_FIELDS.forEach(field => {
                 //value for a single title(filter) with count
                 filterValueMap = new Map<string, number>();
@@ -218,15 +217,21 @@ debugger
      const doesExternalFilterPass = useCallback(
          (node: IRowNode<any>): boolean => {
 
-             let filterPass = true;
+             let isMatched = true;
+             let prevCategory = "";
              if (node.data) {
-                     filtersToApply.forEach((filter, filterLabel) => {
+                     filtersToApply.forEach((filter, filterCategory) => {
                          let record = node.data! as any;
 
-                         if(filter.data_type == FILTER_DATA_TYPE.numeric_range) {
-                             filterPass = false;
+                         if(prevCategory !== "" && prevCategory !== filterCategory && !isMatched) {
+                             return false;
+                         }
+
+                         if(filter.data_type === FILTER_DATA_TYPE.numeric_range) {
+                             isMatched = false;
                              filter.options.forEach((range)=> {
-                                 if(!filterPass) {
+
+                                 if (!isMatched) {
                                      let rangeStartEnd = range.split("-");
                                      let rangeStart = rangeStartEnd[0] as unknown as number;
                                      let rangeEnd = rangeStartEnd[1] as unknown as number;
@@ -235,22 +240,24 @@ debugger
                                      if (cellValue) {
                                          let cellValueNumber = cellValue as number;
                                          if ((cellValueNumber >= rangeStart && cellValueNumber < rangeEnd)) {
-                                             filterPass = true;
+                                             isMatched = true;
                                          }
                                      }
                                  }
-
                              });
 
                          } else {
                              if (!filter.options.includes(record[filter.label] as string)) {
-                                 filterPass = false;
+                                 isMatched = false;
                              }
                          }
+
+                         prevCategory = filterCategory;
+
                      }
                  );
              }
-             return filterPass;
+             return isMatched;
          },
          [filtersToApply]
      );
@@ -260,7 +267,7 @@ debugger
         gridRef.current!.api.onFilterChanged();
     };
 
-    //TODO: may be have to handle range array differently as options may be confusing , let's see I may be wrong
+
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>, data_type:string) => {
         if(event.target.checked) {
             if(filtersToApply.get(event.target.name)) {
