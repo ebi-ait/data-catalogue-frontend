@@ -5,8 +5,8 @@ import {ColDef, IRowNode, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
-import {REST_ENDPOINT_URL} from "./config";
-import {FILTER_FIELDS} from "./config";
+import {REST_ENDPOINT_URL, FILTER_FIELDS} from "./config";
+import {FILTER_DATA_TYPE} from "./types";
 import {JsonSchema7 } from '@jsonforms/core';
 import { SideFilter } from './SideFilter';
 import Stack from "@mui/material/Stack";
@@ -46,12 +46,14 @@ interface CatalogueProps {
 }
 export interface Filter {
     label: string;
+    data_type: string;
     options: string[]
 }
 
 export interface Facet {
     label: string;
     type: string;
+    data_type: string;
     options: string[]
 }
 
@@ -150,21 +152,44 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             facets  = [];
             let filterVals: string[];
             let filterValueMap = new Map<string, number>();
-
+debugger
             FILTER_FIELDS.forEach(field => {
                 //value for a single title(filter) with count
                 filterValueMap = new Map<string, number>();
-                rowData.forEach(node => {
-                    let value = node[field.field] as string;
-                    value = value.trim();
-                    if (value) {
-                        if (filterValueMap.has(value)) {
-                            filterValueMap.set(value, filterValueMap.get(value)! + 1);
+
+                //construct range for range filters
+                if(field.data_type === FILTER_DATA_TYPE.numeric_range ) {
+                    //Currently default 5 ,it should be in a constant outside and have to decide default
+                    let rangeInterval = field.range_interval?field.range_interval:5;
+                   // let numericRgangeMap = new Map<string, number>();
+                    rowData.forEach(node => {
+                        let value = node[field.field] as number;
+                        let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
+                        let range = rangeStart + "-" + (rangeStart + rangeInterval);
+                        if(filterValueMap.has(range)){
+                            filterValueMap.set(range, filterValueMap.get(range)!+1);
                         } else {
-                            filterValueMap.set(value, 1);
+                            filterValueMap.set(range, 1);
                         }
-                    }
-                });
+                    });
+
+
+                } else if(field.data_type === FILTER_DATA_TYPE.string_range ) {
+                    //NOT IMPLEMENTED
+                } else {
+                    rowData.forEach(node => {
+                        let value = node[field.field] as string;
+                        value = value.trim();
+                        if (value) {
+                            if (filterValueMap.has(value)) {
+                                filterValueMap.set(value, filterValueMap.get(value)! + 1);
+                            } else {
+                                filterValueMap.set(value, 1);
+                            }
+                        }
+                    });
+                }
+
 
                 filterVals = [];
                 filterValueMap.forEach((value: number, key: string) => {
@@ -175,6 +200,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                     facets.push({
                         "label": field.field,
                         "type": field.type,
+                        "data_type": field.data_type,
                         "options": filterVals
                     })
                 }
@@ -196,8 +222,32 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
              if (node.data) {
                      filtersToApply.forEach((filter, filterLabel) => {
                          let record = node.data! as any;
-                         if(!filter.options.includes(record[filter.label] as string)) {
+
+                         if(filter.data_type == FILTER_DATA_TYPE.numeric_range) {
+                             console.log("It is a numeric range");
                              filterPass = false;
+                             filter.options.forEach((range)=> {
+                                 debugger
+                                 if(!filterPass) {
+                                     let rangeStartEnd = range.split("-");
+                                     let rangeStart = rangeStartEnd[0] as unknown as number;
+                                     let rangeEnd = rangeStartEnd[1] as unknown as number;
+                                     //TODO: handle null or empty case
+                                     let cellValue = record[filter.label];
+                                     if (cellValue) {
+                                         let cellValueNumber = cellValue as number;
+                                         if ((cellValueNumber >= rangeStart && cellValueNumber < rangeEnd)) {
+                                             filterPass = true;
+                                         }
+                                     }
+                                 }
+
+                             });
+
+                         } else {
+                             if (!filter.options.includes(record[filter.label] as string)) {
+                                 filterPass = false;
+                             }
                          }
                      }
                  );
@@ -207,27 +257,30 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
          [filtersToApply]
      );
 
-    const externalFilterChanged = (event: SelectChangeEvent) => {
-        filtersToApply.set(event.target.name, {label:event.target.name,options:[event.target.value as string]});
+    const externalFilterChanged = (event: SelectChangeEvent<unknown>, data_type:string) => {
+        filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: [event.target.value as string]});
         gridRef.current!.api.onFilterChanged();
     };
 
-    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //TODO: may be have to handle range array differently as options may be confusing , let's see I may be wrong
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>, data_type:string) => {
         debugger
         if(event.target.checked) {
             if(filtersToApply.get(event.target.name)) {
                 filtersToApply.get(event.target.name)?.options.push(event.target.value as string);
             } else {
-                filtersToApply.set(event.target.name, {label: event.target.name, options: [event.target.value as string]});
+                filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: [event.target.value as string]});
             }
         } else {
+            //TODO: may be have to handle range array differently as options may be confusing , let's see I may be wrong
+            //EXACTLY HERE
             let uncheckedArr = filtersToApply.get(event.target.name)?.options.filter((value, index) =>
                 value != event.target.value
             );
             if (!Array.isArray(uncheckedArr) || !uncheckedArr.length) {
                 filtersToApply.delete(event.target.name);
             } else {
-                filtersToApply.set(event.target.name, {label: event.target.name, options: uncheckedArr});
+                filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: uncheckedArr});
             }
         }
         gridRef.current!.api.onFilterChanged();
@@ -276,7 +329,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             // Optionally, handle error (e.g., show error message)
         }
     };
-    // @ts-ignore
+
 
     return (
         <>
@@ -366,7 +419,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                                 id="demo-simple-select"
                                                 label={facet.label}
                                                 name={facet.label}
-                                                onChange={externalFilterChanged} >
+                                                onChange={(event)=>externalFilterChanged(event, facet.data_type)} >
                                                 {facet.options.map((option) => (
                                                     <MenuItem  key={option} value={option}>
                                                         {option}
@@ -382,7 +435,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                                         <ListItem key={option} button sx={{ pl: 4 }}>
                                                             <Checkbox
                                                                 checked= { filtersToApply.get(facet.label)?.options.includes(option)}
-                                                                onChange={handleCheckboxChange}
+                                                                onChange={(event)=>handleCheckboxChange(event, facet.data_type)}
                                                                 name={facet.label}
                                                                 value={option}
                                                                 sx={{
