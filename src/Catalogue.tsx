@@ -224,10 +224,8 @@ debugger
                          let record = node.data! as any;
 
                          if(filter.data_type == FILTER_DATA_TYPE.numeric_range) {
-                             console.log("It is a numeric range");
                              filterPass = false;
                              filter.options.forEach((range)=> {
-                                 debugger
                                  if(!filterPass) {
                                      let rangeStartEnd = range.split("-");
                                      let rangeStart = rangeStartEnd[0] as unknown as number;
@@ -264,23 +262,22 @@ debugger
 
     //TODO: may be have to handle range array differently as options may be confusing , let's see I may be wrong
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>, data_type:string) => {
-        debugger
         if(event.target.checked) {
             if(filtersToApply.get(event.target.name)) {
-                filtersToApply.get(event.target.name)?.options.push(event.target.value as string);
+                if(!filtersToApply.get(event.target.name)?.options.includes(event.target.value as string)) {
+                    filtersToApply.get(event.target.name)?.options.push(event.target.value as string);
+                }
             } else {
                 filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: [event.target.value as string]});
             }
         } else {
-            //TODO: may be have to handle range array differently as options may be confusing , let's see I may be wrong
-            //EXACTLY HERE
-            let uncheckedArr = filtersToApply.get(event.target.name)?.options.filter((value, index) =>
+            let checkedArr = filtersToApply.get(event.target.name)?.options.filter((value, index) =>
                 value != event.target.value
             );
-            if (!Array.isArray(uncheckedArr) || !uncheckedArr.length) {
+            if (!Array.isArray(checkedArr) || !checkedArr.length) {
                 filtersToApply.delete(event.target.name);
             } else {
-                filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: uncheckedArr});
+                filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: checkedArr});
             }
         }
         gridRef.current!.api.onFilterChanged();
@@ -434,7 +431,6 @@ debugger
                                                     {facet.options.map((option: string) => (
                                                         <ListItem key={option} button sx={{ pl: 4 }}>
                                                             <Checkbox
-                                                                checked= { filtersToApply.get(facet.label)?.options.includes(option)}
                                                                 onChange={(event)=>handleCheckboxChange(event, facet.data_type)}
                                                                 name={facet.label}
                                                                 value={option}
