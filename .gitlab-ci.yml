@@ -19,10 +19,6 @@ npm-build:
     - npm install
 #    - npm run test
     - npm run build
-    - cp build deployment/build
-  artifacts:
-    paths:
-      - deployment
   only:
     - ci-test
 
