@@ -1,26 +1,24 @@
 window.config = {
     "ENVIRONMENT":"demo",
-    "REST_ENDPOINT_URL": '/biosamples/samples',
-    "SCHEMA_ENDPOINT_URL": '/biosamples/schemas/core/sample.json',
-    "RESOURCE_JSON_PATH": '_embedded.samples',
+    "REST_ENDPOINT_URL": 'https://raw.githubusercontent.com/ebi-ait/data-catalogue-frontend-elwazi/main/data/catalogue-data.json',
+    "SCHEMA_ENDPOINT_URL": 'https://raw.githubusercontent.com/ebi-ait/data-catalogue-frontend-elwazi/main/data/catalogue-schema.json',
+    "RESOURCE_JSON_PATH": '',
     "GRID_CONFIG":  [
         {
-            "name": "name",
+            "name": "cohort_name",
         },
         {
-            "name": "release",
+            "name": "website",
         },
         {
-            "name": "organism",
-            valueGetter: params => params.data.characteristics?.organism[0].text
+            "name": "countries"
         },
         {
-            "name": "publication",
-            "valueGetter": params => params.data?.publications?.[0]?.pubmed_id
+            "name": "available_data_types.climate_data"
         },
         {
-            "name": "project name",
-            "valueGetter": params => params.data.characteristics?.["project name"]?.[0]?.text
+            "name": "demographic",
+            "valueGetter": params => params.data.available_data_types.environmental
         }
     ]
 }

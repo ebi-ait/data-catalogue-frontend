@@ -1,0 +1,52 @@
+image: docker:stable
+services:
+  - docker:stable-dind
+
+variables:
+  CI_REGISTRY: dockerhub.ebi.ac.uk
+  CI_REGISTRY_IMAGE: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo
+  CI_COMMIT_TAG: 0.0.1
+
+before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+stages:
+  - build
+  - package
+  - deploy
+
+npm-build:
+  image: node:18-alpine
+  stage: build
+  script:
+    - npm install
+    - npm run test
+    - npm run build
+    - cp build deployment/build
+  artifacts:
+    paths:
+      - deployment
+  only:
+    - ci-test
+
+docker-publish:
+  stage: package
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+  only:
+    - ci-test
+
+k8s-deploy-demo:
+  image: dtzar/helm-kubectl:3.11.0
+  stage: deploy
+  script:
+    - sed -i s#%DOCKER_IMAGE%#$CI_REGISTRY_IMAGE\:$CI_COMMIT_TAG#g Kubernetes-dev-deployment.yaml
+    - kubectl config set-cluster fair-cluster --server="${K8_HX_SERVER}"
+    - kubectl config set clusters.fair-cluster.certificate-authority-data ${K8_HX_CERTIFICATE_AUTHORITY_DATA}
+    - kubectl config set-credentials fair-user --token="${K8_HX_CREDENTIALS}"
+    - kubectl config set-context fair-context --cluster=ena-cluster --user=ena-user
+    - kubectl config use-context fair-context
+    - kubectl apply -f Kubernetes-dev-deployment.yaml --namespace=dc-demo-dev
+  when: manual
+

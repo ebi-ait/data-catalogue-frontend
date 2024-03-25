@@ -46,7 +46,7 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
             .split('.')
             .reduce((result:any, current:string) => result[current], data)
 
-        return documents;
+        return documents ? documents : data;
     } catch (error) {
         console.error('Error fetching catalogue data:', error);
         throw error;
