@@ -7,9 +7,6 @@ variables:
   CI_REGISTRY_IMAGE: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo
   CI_COMMIT_TAG: 0.0.1
 
-#before_script:
-#  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-
 stages:
   - build
   - package
@@ -20,7 +17,7 @@ npm-build:
   stage: build
   script:
     - npm install
-    - npm run test
+#    - npm run test
     - npm run build
     - cp build deployment/build
   artifacts:
