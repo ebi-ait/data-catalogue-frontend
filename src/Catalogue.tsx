@@ -19,7 +19,6 @@ interface CatalogueProps {
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
-    const fieldConfMap = {};
 
 
     function toTitleCase(key: string) {
