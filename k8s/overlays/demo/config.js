@@ -1,6 +1,6 @@
 window.appConfig = {
     "ENVIRONMENT":"demo",
-    "basename":"/catalogue/demo/",
+    "basename":"/catalogue/demo",
     "REST_ENDPOINT_URL": '/biosamples/samples',
     "SCHEMA_ENDPOINT_URL": '/biosamples/schemas/core/sample.json',
     "RESOURCE_JSON_PATH": '_embedded.samples',
