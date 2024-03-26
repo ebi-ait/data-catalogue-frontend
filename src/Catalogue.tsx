@@ -5,14 +5,10 @@ import {ColDef, IRowNode, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
-import {REST_ENDPOINT_URL, FILTER_FIELDS} from "./config";
-import {FILTER_DATA_TYPE} from "./types";
-import {JsonSchema7 } from '@jsonforms/core';
-import { SideFilter } from './SideFilter';
-import Stack from "@mui/material/Stack";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import {FILTER_FIELDS, REST_ENDPOINT_URL} from "./config";
+import {FilterDataType} from "./types";
+import MuiAppBar, {AppBarProps as MuiAppBarProps} from "@mui/material/AppBar";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
     Box,
@@ -34,10 +30,9 @@ import {
     styled,
     Toolbar,
     Typography,
-    useTheme
 } from "@mui/material";
-import {Add, Remove } from '@mui/icons-material';
-import { shouldHideColumn } from './Util';
+import {Add, Remove} from '@mui/icons-material';
+import {shouldHideColumn} from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
 
@@ -115,12 +110,9 @@ let filtersToApply:Map<string, Filter> = new Map<string, Filter>();
 
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const [rowData, setRowData] = useState<any[]>([]);
-    const [filterData, setFilterData] = useState<any[]>([]);
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
-    const fieldConfMap = {};
     const [openFilters, setOpenFilters] = React.useState({});
-    const theme = useTheme();
     const [open, setOpen] = React.useState(false);
 
     useEffect(() => {
@@ -158,23 +150,25 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 filterValueMap = new Map<string, number>();
 
                 //construct range for range filters
-                if(field.data_type === FILTER_DATA_TYPE.numeric_range ) {
-                    //Currently default 5 ,it should be in a constant outside and have to decide default
-                    let rangeInterval = field.range_interval?field.range_interval:5;
-                   // let numericRgangeMap = new Map<string, number>();
+                if(field.data_type === FilterDataType.numeric_range ) {
+
+                    let rangeInterval = field.range_interval || 1000000;
+
                     rowData.forEach(node => {
                         let value = node[field.field] as number;
-                        let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
-                        let range = rangeStart + "-" + (rangeStart + rangeInterval);
-                        if(filterValueMap.has(range)){
-                            filterValueMap.set(range, filterValueMap.get(range)!+1);
-                        } else {
-                            filterValueMap.set(range, 1);
+                        if(value) {
+                            let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
+                            let range = rangeStart + "-" + (rangeStart + rangeInterval);
+                            if (filterValueMap.has(range)) {
+                                filterValueMap.set(range, filterValueMap.get(range)! + 1);
+                            } else {
+                                filterValueMap.set(range, 1);
+                            }
                         }
                     });
 
 
-                } else if(field.data_type === FILTER_DATA_TYPE.string_range ) {
+                } else if(field.data_type === FilterDataType.string_range ) {
                     //NOT IMPLEMENTED
                 } else {
                     rowData.forEach(node => {
@@ -200,6 +194,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 });
                 filterVals.sort();
                 if(filterVals) {
+                    field.data_type = field.data_type||FilterDataType.string;
                     facets.push({
                         "label": field.field,
                         "type": field.type,
@@ -231,7 +226,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                              return false;
                          }
 
-                         if(filter.data_type === FILTER_DATA_TYPE.numeric_range) {
+                         if(filter.data_type === FilterDataType.numeric_range) {
                              isMatched = false;
                              filter.options.forEach((range)=> {
 
@@ -239,7 +234,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                      let rangeStartEnd = range.split("-");
                                      let rangeStart = rangeStartEnd[0] as unknown as number;
                                      let rangeEnd = rangeStartEnd[1] as unknown as number;
-                                     //TODO: handle null or empty case
                                      let cellValue = record[filter.label];
                                      if (cellValue) {
                                          let cellValueNumber = cellValue as number;

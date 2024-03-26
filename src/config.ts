@@ -1,5 +1,5 @@
 
-import {ColumnConfiguration, FILTER_DATA_TYPE} from "./types";
+import {ColumnConfiguration, FilterDataType, SideFilter} from "./types";
 
 export const REST_ENDPOINT_URL: string = 'http://127.0.0.1:5000/document';
 export const SCHEMA_ENDPOINT_URL: string = 'http://127.0.0.1:5000/document/schema';
@@ -22,19 +22,19 @@ export const GRID_CONFIG: ColumnConfiguration[] = [
     ]
 ;
 
-export const FILTER_FIELDS = [ {
+export const FILTER_FIELDS:SideFilter[] = [ {
         field: "title",
         type:"select",
-        data_type: FILTER_DATA_TYPE.string
+        data_type: FilterDataType.string
 }, {
         field: "acronym",
         type:"checkbox",
-        data_type: FILTER_DATA_TYPE.string
+        data_type: FilterDataType.string
 },
     {
         field: "submissions",
         type:"checkbox",
-        data_type:FILTER_DATA_TYPE.numeric_range,
+        data_type:FilterDataType.numeric_range,
         range_interval:8
     }
 ]

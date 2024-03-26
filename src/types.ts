@@ -6,8 +6,16 @@ export interface ColumnConfiguration {
     //TODO: filters
 }
 
-export const FILTER_DATA_TYPE = {
-    string: "string",
-    numeric_range:"numeric_range",
-    string_range:"string_range"
-};
+export enum FilterDataType  {
+    string = "string",
+    numeric_range ="numeric_range",
+    string_range = "string_range"
+}
+
+export interface SideFilter {
+    field: string,
+    type:string,
+    data_type?:FilterDataType,
+    range_interval?:number
+
+}
