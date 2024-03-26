@@ -10,7 +10,8 @@ import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
 import {ColumnConfiguration} from "./types";
 
-const config = window?.config;
+const config = window?.appConfig
+
 
 interface CatalogueProps {
     schema: any;

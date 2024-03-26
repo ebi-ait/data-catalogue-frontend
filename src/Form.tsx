@@ -9,7 +9,8 @@ interface FormProps {
     schema: any;
 }
 
-const config = window.config;
+const config = window?.appConfig;
+
 const Form: React.FC<FormProps> = ({schema}) => {
     const [formData, setFormData] = useState<any>({});
     const handleSubmit = async () => {

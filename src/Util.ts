@@ -1,6 +1,6 @@
 import {ColumnConfiguration} from "./types";
 
-const config = window.config;
+const config = window?.appConfig;
 
 export function shouldHideColumn(column: string) {
     return config.GRID_CONFIG

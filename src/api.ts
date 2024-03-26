@@ -1,6 +1,6 @@
 // api.ts
 
-const config = window.config;
+const config = window?.appConfig;
 
 export const fetchSchema = async (): Promise<any> => {
     function fixSchemaIdAttribute(schemaData: { [x: string]: any; id: any; }) {
@@ -42,7 +42,7 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
         }
         const data = await response.json();
         // const documents = data?._embedded[window.config.RESOURCE_TYPE_PLURAL] ?? [];
-        const documents = window.config.RESOURCE_JSON_PATH
+        const documents = config.RESOURCE_JSON_PATH
             .split('.')
             .reduce((result:any, current:string) => result[current], data)
 
@@ -52,4 +52,3 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
         throw error;
     }
 };
-

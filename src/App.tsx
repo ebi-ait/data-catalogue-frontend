@@ -5,6 +5,8 @@ import Form from './Form';
 import Catalogue from './Catalogue';
 import {fetchSchema} from './api';
 
+const config = window?.appConfig;
+
 const App: React.FC = () => {
     const [schema, setSchema] = useState<any>(null);
 
@@ -22,10 +24,9 @@ const App: React.FC = () => {
 
     return (
         (schema ?
-                <Router>
+                <Router basename={config.basename}>
                     <Routes>
-                        <Route path="/" element={<Form schema={schema}/>}/>
-                        <Route path="/catalogue" element={<Catalogue schema={schema}/>}/>
+                        <Route path="/" element={<Catalogue schema={schema}/>}/>
                     </Routes>
                 </Router>
                 : <div>Loading...</div>
