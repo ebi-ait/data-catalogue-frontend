@@ -33,8 +33,8 @@ export const FILTER_FIELDS:SideFilter[] = [ {
 },
     {
         field: "submissions",
-        type:"checkbox",
-        data_type:FilterDataType.numeric_range,
+        type:"numeric_slider",
+        data_type:FilterDataType.numeric_slider,
         range_interval:8
     }
 ]

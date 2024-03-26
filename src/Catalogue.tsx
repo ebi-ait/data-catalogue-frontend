@@ -26,7 +26,7 @@ import {
     ListItemText,
     MenuItem,
     Select,
-    SelectChangeEvent,
+    SelectChangeEvent, Slider,
     styled,
     Toolbar,
     Typography,
@@ -42,14 +42,14 @@ interface CatalogueProps {
 export interface Filter {
     label: string;
     data_type: string;
-    options: string[]
+    options: any[]
 }
 
 export interface Facet {
     label: string;
     type: string;
     data_type: string;
-    options: string[]
+    options: any[]
 }
 
 interface AppBarProps extends MuiAppBarProps {
@@ -148,60 +148,80 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             FILTER_FIELDS.forEach(field => {
                 //value for a single title(filter) with count
                 filterValueMap = new Map<string, number>();
-
-                //construct range for range filters
-                if(field.data_type === FilterDataType.numeric_range ) {
-
-                    let rangeInterval = field.range_interval || 1000000;
+                if(field.data_type === FilterDataType.numeric_slider) {
+                    let ranges: number[] = [];
 
                     rowData.forEach(node => {
                         let value = node[field.field] as number;
-                        if(value) {
-                            let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
-                            let range = rangeStart + "-" + (rangeStart + rangeInterval);
-                            if (filterValueMap.has(range)) {
-                                filterValueMap.set(range, filterValueMap.get(range)! + 1);
-                            } else {
-                                filterValueMap.set(range, 1);
-                            }
-                        }
-                    });
-
-
-                } else if(field.data_type === FilterDataType.string_range ) {
-                    //NOT IMPLEMENTED
-                } else {
-                    rowData.forEach(node => {
-                        let value = node[field.field] as string;
-                        value = value.trim();
                         if (value) {
-                            if (filterValueMap.has(value)) {
-                                filterValueMap.set(value, filterValueMap.get(value)! + 1);
-                            } else {
-                                filterValueMap.set(value, 1);
-                            }
+                            ranges.push(value);
                         }
                     });
-                }
+                    ranges.sort();
+                    let min = ranges[0];
+                    let max = ranges[ranges.length - 1];
 
-
-                filterVals = [];
-                if(field.type === "select") {
-                    filterVals.push(SELECT_DUMMY_VALUE);
-                }
-                filterValueMap.forEach((value: number, key: string) => {
-                    filterVals.push(key)
-                });
-                filterVals.sort();
-                if(filterVals) {
-                    field.data_type = field.data_type||FilterDataType.string;
                     facets.push({
                         "label": field.field,
                         "type": field.type,
-                        "data_type": field.data_type,
-                        "options": filterVals
-                    })
+                        "data_type": FilterDataType.numeric_slider,
+                        "options": [min, max]
+                    });
+
+                } else {
+                    //construct range for range filters
+                    if (field.data_type === FilterDataType.numeric_range) {
+
+                        let rangeInterval = field.range_interval || 1000000;
+
+                        rowData.forEach(node => {
+                            let value = node[field.field] as number;
+                            if (value) {
+                                let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
+                                let range = rangeStart + "-" + (rangeStart + rangeInterval);
+                                if (filterValueMap.has(range)) {
+                                    filterValueMap.set(range, filterValueMap.get(range)! + 1);
+                                } else {
+                                    filterValueMap.set(range, 1);
+                                }
+                            }
+                        });
+
+
+                    } else {
+                        rowData.forEach(node => {
+                            let value = node[field.field] as string;
+                            value = value.trim();
+                            if (value) {
+                                if (filterValueMap.has(value)) {
+                                    filterValueMap.set(value, filterValueMap.get(value)! + 1);
+                                } else {
+                                    filterValueMap.set(value, 1);
+                                }
+                            }
+                        });
+                    }
+
+
+                    filterVals = [];
+                    if (field.type === "select") {
+                        filterVals.push(SELECT_DUMMY_VALUE);
+                    }
+                    filterValueMap.forEach((value: number, key: string) => {
+                        filterVals.push(key)
+                    });
+                    filterVals.sort();
+                    if (filterVals) {
+                        field.data_type = field.data_type || FilterDataType.string;
+                        facets.push({
+                            "label": field.field,
+                            "type": field.type,
+                            "data_type": field.data_type,
+                            "options": filterVals
+                        })
+                    }
                 }
+
             });
         };
         setFilters();
@@ -315,6 +335,15 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             [filterLabel]: // @ts-ignore
              !prevOpenFilters[filterLabel]
         }));
+    };
+
+    const [value, setValue] = React.useState<number[]>([20, 37]);
+
+    function valuetext(value: number) {
+        return `${value}`;
+    }
+    const handleChange = (event: Event, newValue: number | number[]) => {
+        setValue(newValue as number[]);
     };
 
     const handleRowValueChanged = async (event: RowValueChangedEvent) => {
@@ -438,6 +467,19 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                             </FormControl>
                                          </ListItem>
                                             )}
+
+                                            {facet.type === "numeric_slider" && (
+                                                <Box sx={{ pl: 4, pr: 4 }}>
+                                                <Slider
+                                                    getAriaLabel={() => 'Temperature range'}
+                                                    value={value}
+                                                    onChange={handleChange}
+                                                    valueLabelDisplay="auto"
+                                                    getAriaValueText={valuetext}
+                                                />
+                                                </Box>
+                                            ) }
+
                                             {facet.type === "checkbox" && (
                                                 <List component="div" disablePadding>
                                                     {facet.options.map((option: string) => (

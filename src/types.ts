@@ -9,7 +9,8 @@ export interface ColumnConfiguration {
 export enum FilterDataType  {
     string = "string",
     numeric_range ="numeric_range",
-    string_range = "string_range"
+    string_range = "string_range",
+    numeric_slider="numeric_slider"
 }
 
 export interface SideFilter {
