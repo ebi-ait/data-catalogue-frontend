@@ -1,4 +1,5 @@
 import {ValueGetterFunc} from "ag-grid-community";
+import {AppBarProps as MuiAppBarProps} from "@mui/material";
 
 export const HIDE_COLUMN_KEY: string = 'hide';
 
@@ -7,6 +8,7 @@ export interface ColumnConfiguration {
     hide?: boolean;
     field?: string;
     valueGetter?: string | ValueGetterFunc;
+    type?: string;
     //TODO: filters
 }
 export interface Config {
@@ -30,4 +32,25 @@ export interface SideFilter {
     data_type?:FilterDataType,
     range_interval?:number
 
+}
+
+export interface Filter {
+    label: string;
+    data_type: string;
+    options: string[]
+}
+
+export interface Facet {
+    label: string;
+    type: string;
+    data_type: string;
+    options: string[]
+}
+
+export interface CatalogueProps {
+    schema: any;
+}
+
+export interface AppBarProps extends MuiAppBarProps {
+    open?: boolean;
 }
