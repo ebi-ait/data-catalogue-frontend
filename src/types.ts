@@ -17,3 +17,17 @@ export interface Config {
     RESOURCE_JSON_PATH: string;
     GRID_CONFIG:  ColumnConfiguration[];
 }
+
+export enum FilterDataType  {
+    string = "string",
+    numeric_range ="numeric_range",
+    string_range = "string_range"
+}
+
+export interface SideFilter {
+    field: string,
+    type:string,
+    data_type?:FilterDataType,
+    range_interval?:number
+
+}
