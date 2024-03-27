@@ -39,7 +39,9 @@ k8s-deploy-demo:
     - kubectl config set-credentials team-admin-hx-wp-webadmin-17 --token="${K8_HX_USER_TOKEN}"
     - kubectl config set-context dc-demo-dev --cluster=hx-wp-webadmin-17 --user=team-admin-hx-wp-webadmin-17
     - kubectl config use-context dc-demo-dev
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+    - cp .secure_files/.dockerconfig.json ./k8s/overlays/demo/
     - kustomize build k8s/overlays/demo
-    - kubectl apply -f Kubernetes-dev-deployment.yaml --namespace=dc-demo-dev
+    - kubectl apply -f k8s/overlays/demo --namespace=dc-demo-dev
   when: manual
 
