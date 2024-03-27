@@ -1,7 +1,7 @@
 // Catalogue.tsx
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {ColDef, IRowNode, RowValueChangedEvent, ValueGetterParams} from 'ag-grid-community';
+import {ColDef, FilterModel, IRowNode, RowValueChangedEvent, ValueGetterParams} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {
@@ -104,7 +104,7 @@ let filtersToApply: Map<string, Filter> = new Map<string, Filter>();
  * @param data the row's data
  * @param filterDef
  */
-function getCellValue<T>(colDef: ColDef<any, any>, data: any):T {
+function getCellValue<T>(colDef: ColDef<any, any>, data: any): T {
     let value;
     if (typeof colDef.valueGetter === 'function') {
         return colDef?.valueGetter({data} as ValueGetterParams) as T;
@@ -122,9 +122,11 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
     function formatDateTime(params: ValueFormatterParams) {
         return params.value ? new Date(params.value).toLocaleDateString() : '';
     }
+
     function toTitleCase(key: string) {
         return key.charAt(0).toUpperCase() + key.slice(1);
     }
+
     useEffect(() => {
         const newColumnDefs: ColDef[] = config.GRID_CONFIG
             .map((columnConfig: ColumnConfiguration) => {
@@ -155,7 +157,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
             let filterVals: string[];
             let filterValueMap = new Map<string, number>();
             config.FILTER_FIELDS.forEach((field: SideFilter) => {
-                const colDef = columnDefs.find((colDef:ColDef)=>colDef.field == field.field);
+                const colDef = columnDefs.find((colDef: ColDef) => colDef.field == field.field);
                 if (typeof colDef === 'undefined') {
                     console.warn(`cannot find ColDef for ${field.field}`);
 
@@ -230,7 +232,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
 
     const doesExternalFilterPass = useCallback(
         (node: IRowNode<any>): boolean => {
-
             let isMatched = true;
             let prevCategory = "";
             if (node.data) {
@@ -239,14 +240,14 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                         if (prevCategory !== "" && prevCategory !== filterCategory && !isMatched) {
                             return false;
                         }
-                        const colDef = gridRef.current?.api?.getColumnDefs()?.find((colDef:ColDef)=>colDef.field == filter.label);
-                        let cellValue : any;
+                        const colDef = gridRef.current?.api?.getColumnDefs()?.find((colDef: ColDef) => colDef.field == filter.label);
+                        let cellValue: any;
                         if (typeof colDef === 'undefined') {
                             console.warn(`cannot find ColDef for ${filter.label}`);
                         } else {
                             cellValue = getCellValue(colDef, record);
                         }
-                        if (filter.data_type === "numeric_range") {
+                        if (filter.data_type === FilterDataType.numeric_range) {
                             isMatched = false;
                             filter.options.forEach((range) => {
 
@@ -264,7 +265,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                             });
 
                         } else {
-                            if (!filter.options.includes(cellValue  as string)) {
+                            if (!filter.options.includes(cellValue as string)) {
                                 isMatched = false;
                             }
                         }
@@ -296,33 +297,69 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
 
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>, data_type: string) => {
-        if (event.target.checked) {
-            if (filtersToApply.get(event.target.name)) {
-                if (!filtersToApply.get(event.target.name)?.options.includes(event.target.value as string)) {
-                    filtersToApply.get(event.target.name)?.options.push(event.target.value as string);
-                }
-            } else {
-                filtersToApply.set(event.target.name, {
-                    label: event.target.name,
-                    data_type,
-                    options: [event.target.value as string]
-                });
-            }
-        } else {
-            let checkedArr = filtersToApply.get(event.target.name)?.options.filter((value, index) =>
-                value != event.target.value
-            );
-            if (!Array.isArray(checkedArr) || !checkedArr.length) {
-                filtersToApply.delete(event.target.name);
-            } else {
-                filtersToApply.set(event.target.name, {label: event.target.name, data_type, options: checkedArr});
+        const filterModel = gridRef.current?.api.getFilterModel() as FilterModel;
+
+        function convertToMultiConditionFilter() {
+            const firstFilter = filterModel[event.target.name]
+            filterModel[event.target.name] = {
+                filterType: 'text',
+                operator: 'OR',
+                conditions: [
+                    firstFilter,
+                    {
+                        filter: event.target.value as string,
+                        type: 'equals',
+                        filterType: 'text'
+                    }
+                ]
             }
         }
-        gridRef.current!.api.onFilterChanged();
+
+        function initializeFilter() {
+            if(data_type==='string') {
+                filterModel[event.target.name] = {
+                    filter: event.target.value as string,
+                    type: 'equals',
+                    filterType: 'text'
+                };
+            } else if(data_type==='numeric_range') {
+                const [filter, filterTo] = event.target.value.split('-');
+                filterModel[event.target.name] = {
+                    filter,
+                    filterTo,
+                    type: 'inRange',
+                    filterType: 'number'
+                };
+            } else {
+                throw Error(`unsupported filter data type: ${data_type}`)
+            }
+        }
+
+        function removeFilterCondition() {
+            filterModel[event.target.name].conditions = filterModel[event.target.name].conditions.filter((c: any) => c.filter !== event.target.value)
+            if (filterModel[event.target.name].conditions.length == 0) {
+                delete filterModel[event.target.name];
+            }
+        }
+
+        if (event.target.checked) {
+            if (!(event.target.name in filterModel)) {
+                initializeFilter();
+            } else if (!('conditions' in filterModel[event.target.name])) {
+                convertToMultiConditionFilter();
+            }
+        } else { // uncheck
+            if ('conditions' in filterModel[event.target.name]) {
+                removeFilterCondition();
+            } else {
+                delete filterModel[event.target.name];
+            }
+        }
+        gridRef.current!.api.setFilterModel(filterModel);
     };
     const handleResetAll = () => {
         filtersToApply = new Map<string, Filter>();
-        gridRef.current!.api.onFilterChanged();
+        gridRef.current!.api.setFilterModel(null);
         setOpenFilters({});
     };
 
@@ -401,7 +438,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                         anchor="left"
                         open={open}>
 
-
                     <DrawerHeader>
                         <IconButton onClick={handleDrawerClose}>Filters
                             <ChevronLeftIcon/>
@@ -410,9 +446,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
 
                     <Divider/>
 
-
                     <Box>
-
                         <Box
                             display="flex"
                             justifyContent="space-between"
@@ -428,7 +462,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                             {facets.map((facet, index) => (
 
                                 <React.Fragment key={facet.label}>
-
                                     <ListItem button onClick={() => handleToggleFilter(facet.label)}>
                                         <ListItemText primary={facet.label}/>
                                         {// @ts-ignore
@@ -486,14 +519,13 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
 
                                     </Collapse>
                                 </React.Fragment>
-
                             ))}
                         </List>
-
                     </Box>
                 </Drawer>
 
-                <Main open={open} className={"ag-theme-alpine " + catalogueStyle.CatalogueGrid}
+                <Main open={open}
+                      className={"ag-theme-alpine " + catalogueStyle.CatalogueGrid}
                       style={{height: '80vh', width: '100%'}}>
                     <DrawerHeader/>
                     <AgGridReact
@@ -504,7 +536,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                         paginationPageSize={10}
                         isExternalFilterPresent={isExternalFilterPresent}
                         doesExternalFilterPass={doesExternalFilterPass}
-                        onRowValueChanged={handleRowValueChanged}
                     />
                 </Main>
 

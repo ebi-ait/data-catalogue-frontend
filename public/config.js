@@ -50,7 +50,7 @@ window.appConfig = {
             field: "pH",
             type: "checkbox",
             data_type: "numeric_range",
-            range_interval: 3
+            range_interval: 2
         }
     ]
 
