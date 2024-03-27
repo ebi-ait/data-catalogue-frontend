@@ -40,9 +40,9 @@ k8s-deploy-demo:
     - kubectl config unset contexts
     - kubectl config unset users
     - kubectl config unset clusters
-    - kubectl config set clusters.ena-cluster.server $K8_HX_SERVER
-    - kubectl config set clusters.ena-cluster.certificate-authority-data $K8_HX_CERTIFICATE_AUTHORITY_DATA
-    - kubectl config set users.ena-admin.token $K8_HX_USER_TOKEN
+    - kubectl config set clusters.ena-cluster.server "$K8_HX_SERVER"
+    - kubectl config set clusters.ena-cluster.certificate-authority-data "$K8_HX_CERTIFICATE_AUTHORITY_DATA"
+    - kubectl config set users.ena-admin.token "$K8_HX_USER_TOKEN"
     - kubectl config set contexts.dc-demo.cluster ena-cluster
     - kubectl config set contexts.dc-demo.user ena-admin
     - kubectl config set contexts.dc-demo.namespace dc-demo-dev
