@@ -37,19 +37,9 @@ window.appConfig = {
     ],
     FILTER_FIELDS: [
         {
-            field: "soilType",
+            field: "status",
             type: "select",
             data_type: "string"
-        }, {
-            field: "organism",
-            type: "checkbox",
-            data_type: "string"
-        },
-        {
-            field: "pH",
-            type: "checkbox",
-            data_type: "numeric_range",
-            range_interval: 8
         }
     ]
 

@@ -88,7 +88,7 @@ const Main = styled("main", {shouldForwardProp: (prop) => prop !== "open"})<{
 }));
 
 
-export let facets: Facet[] = [];
+
 let filtersToApply: Map<string, Filter> = new Map<string, Filter>();
 
 const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
@@ -97,6 +97,77 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const gridRef = useRef<AgGridReact<any>>(null);
     const [openFilters, setOpenFilters] = React.useState({});
     const [open, setOpen] = React.useState(false);
+    const [facets, setFacets] = React.useState<Facet[]>([]);
+
+    useEffect(() => {
+        // This effect will run every time myVariable changes
+        // Update otherVariable here when myVariable changes
+        setVariable();
+    }, [rowData]);
+
+    const setVariable = () => {
+        setFacets( []);
+        debugger
+        let facetsToShow: Facet[] = [];
+        let filterVals: string[];
+        let filterValueMap = new Map<string, number>();
+        config.FILTER_FIELDS.forEach((field: any) => {
+            //value for a single title(filter) with count
+            filterValueMap = new Map<string, number>();
+
+            //construct range for range filters
+            if(field.data_type === FilterDataType.numeric_range ) {
+
+                let rangeInterval = field.range_interval || 1000000;
+
+                rowData.forEach(node => {
+                    let value = node[field.field] as number;
+                    if (value && typeof(value) !== undefined ) {
+                        let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
+                        let range = rangeStart + "-" + (rangeStart + rangeInterval);
+                        if (filterValueMap.has(range)) {
+                            filterValueMap.set(range, filterValueMap.get(range)! + 1);
+                        } else {
+                            filterValueMap.set(range, 1);
+                        }
+                    }
+                });
+
+
+            } else  {
+                rowData.forEach(node => {
+                    let value = node[field.field] as string;
+                    if (value && typeof(value) !== undefined ){
+                        if (filterValueMap.has(value)) {
+                            filterValueMap.set(value, filterValueMap.get(value)! + 1);
+                        } else {
+                            filterValueMap.set(value, 1);
+                        }
+                    }
+                });
+            }
+
+
+            filterVals = [];
+            if (field.type === "select") {
+                filterVals.push(SELECT_DUMMY_VALUE);
+            }
+            filterValueMap.forEach((value: number, key: string) => {
+                filterVals.push(key)
+            });
+            filterVals.sort();
+            if (filterVals) {
+                field.data_type = field.data_type||FilterDataType.string;
+                facetsToShow.push({
+                    "label": field.field,
+                    "type": field.type,
+                    "data_type": field.data_type,
+                    "options": filterVals
+                })
+            }
+        });
+        setFacets(facetsToShow);
+    };
 
     function formatDateTime(params: ValueFormatterParams) {
         return params.value ? new Date(params.value).toLocaleDateString() : '';
@@ -133,75 +204,14 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             try {
                 const documents = await fetchCatalogueData();
                 setRowData(documents);
+
             } catch (error) {
                 console.error('Error fetching catalogue data:', error);
             }
         };
         fetchData();
-        const setFilters = () => {
-            facets = [];
-            let filterVals: string[];
-            let filterValueMap = new Map<string, number>();
-            config.FILTER_FIELDS.forEach((field: any) => {
-                //value for a single title(filter) with count
-                filterValueMap = new Map<string, number>();
-
-                //construct range for range filters
-                if(field.data_type === FilterDataType.numeric_range ) {
-
-                    let rangeInterval = field.range_interval || 1000000;
-
-                    rowData.forEach(node => {
-                        let value = node[field.field] as number;
-                        if (value) {
-                            let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
-                            let range = rangeStart + "-" + (rangeStart + rangeInterval);
-                            if (filterValueMap.has(range)) {
-                                filterValueMap.set(range, filterValueMap.get(range)! + 1);
-                            } else {
-                                filterValueMap.set(range, 1);
-                            }
-                        }
-                    });
 
 
-                } else if (field.data_type === FilterDataType.string_range) {
-                    //NOT IMPLEMENTED
-                } else {
-                    rowData.forEach(node => {
-                        let value = node[field.field] as string;
-                        value = value.trim();
-                        if (value) {
-                            if (filterValueMap.has(value)) {
-                                filterValueMap.set(value, filterValueMap.get(value)! + 1);
-                            } else {
-                                filterValueMap.set(value, 1);
-                            }
-                        }
-                    });
-                }
-
-
-                filterVals = [];
-                if (field.type === "select") {
-                    filterVals.push(SELECT_DUMMY_VALUE);
-                }
-                filterValueMap.forEach((value: number, key: string) => {
-                    filterVals.push(key)
-                });
-                filterVals.sort();
-                if (filterVals) {
-                    field.data_type = field.data_type||FilterDataType.string;
-                    facets.push({
-                        "label": field.field,
-                        "type": field.type,
-                        "data_type": field.data_type,
-                        "options": filterVals
-                    })
-                }
-            });
-        };
-        setFilters();
 
     }, [schema]);
 
