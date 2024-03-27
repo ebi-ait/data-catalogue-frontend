@@ -4,8 +4,16 @@ import {AgGridReact} from 'ag-grid-react';
 import {ColDef, IRowNode, RowValueChangedEvent, ValueGetterParams} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import {fetchCatalogueData} from './api';
-import {AppBarProps, CatalogueProps, ColumnConfiguration, Facet, Filter, FilterDataType, SideFilter} from "./types";
+import {
+    AppBarProps,
+    CatalogueProps,
+    ColumnConfiguration,
+    Config,
+    Facet,
+    Filter,
+    FilterDataType,
+    SideFilter
+} from "./types";
 import MuiAppBar from "@mui/material/AppBar";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -36,8 +44,7 @@ import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
 import {ValueFormatterParams} from "ag-grid-community/dist/lib/entities/colDef";
 
-const config = window?.appConfig
-
+const config = window?.appConfig as Config;
 
 const drawerWidth = 240;
 const SELECT_DUMMY_VALUE = "---none---";
@@ -487,7 +494,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                 </Drawer>
 
                 <Main open={open} className={"ag-theme-alpine " + catalogueStyle.CatalogueGrid}
-                      style={{height: '500px', width: '100%'}}>
+                      style={{height: '80vh', width: '100%'}}>
                     <DrawerHeader/>
                     <AgGridReact
                         rowData={rowData}
@@ -495,8 +502,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                         ref={gridRef}
                         pagination={true}
                         paginationPageSize={10}
-                        editType={'fullRow'}
-                        sideBar={true}
                         isExternalFilterPresent={isExternalFilterPresent}
                         doesExternalFilterPass={doesExternalFilterPass}
                         onRowValueChanged={handleRowValueChanged}

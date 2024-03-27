@@ -9,7 +9,6 @@ export interface ColumnConfiguration {
     field?: string;
     valueGetter?: string | ValueGetterFunc;
     type?: string;
-    //TODO: filters
 }
 export interface Config {
     ENVIRONMENT:string;
@@ -18,6 +17,7 @@ export interface Config {
     SCHEMA_ENDPOINT_URL: string;
     RESOURCE_JSON_PATH: string;
     GRID_CONFIG:  ColumnConfiguration[];
+    FILTER_FIELDS: SideFilter[];
 }
 
 export enum FilterDataType  {
@@ -26,6 +26,7 @@ export enum FilterDataType  {
     string_range = "string_range"
 }
 
+// FIXME amnon: SideFilter and Filter are a duplication
 export interface SideFilter {
     field: string,
     type:string,

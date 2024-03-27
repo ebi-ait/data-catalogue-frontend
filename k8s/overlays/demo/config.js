@@ -24,6 +24,10 @@ window.appConfig = {
             valueGetter: params => params.data.characteristics?.["soil type"]?.[0].text
         },
         {
+            "name": "pH",
+            valueGetter: params => params.data.characteristics?.pH?.[0].text
+        },
+        {
             "name": "publication",
             "valueGetter": params => params.data?.publications?.[0]?.pubmed_id
         },
@@ -32,21 +36,23 @@ window.appConfig = {
             "valueGetter": params => params.data.characteristics?.["project name"]?.[0]?.text
         }
     ],
+
     FILTER_FIELDS: [
         {
-            field: "title",
-            type: "select",
+            field: "soilType",
+            type: "checkbox",
             data_type: "string"
         }, {
-            field: "acronym",
+            field: "organism",
             type: "checkbox",
             data_type: "string"
         },
         {
-            field: "submissions",
+            field: "pH",
             type: "checkbox",
             data_type: "numeric_range",
-            range_interval: 8
+            range_interval: 3
         }
     ]
+
 }
