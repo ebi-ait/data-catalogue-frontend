@@ -5,10 +5,11 @@ import {ColDef, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
-import { shouldHideColumn } from './Util';
+import {shouldHideColumn} from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
 import {ColumnConfiguration} from "./types";
+import {ValueFormatterParams} from "ag-grid-community/dist/lib/entities/colDef";
 
 const config = window?.appConfig
 
@@ -23,10 +24,12 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
     const fieldConfMap = {};
 
 
+    function formatDateTime(params: ValueFormatterParams) {
+        return params.value ? new Date(params.value).toLocaleDateString() : '';
+    }
     function toTitleCase(key: string) {
         return key.charAt(0).toUpperCase() + key.slice(1);
     }
-
     useEffect(() => {
         const newColumnDefs: ColDef[] = config.GRID_CONFIG.map((columnConfig:ColumnConfiguration)=>{
             let propertyDef = schema.properties[columnConfig.name]
@@ -34,13 +37,18 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 headerName: toTitleCase(columnConfig.name),
                 field: columnConfig?.field ?? columnConfig.name,
                 editable: true,
-                hide: shouldHideColumn(columnConfig.name)
+                hide: shouldHideColumn(columnConfig.name),
+                filter: true,
             };
             if ('valueGetter' in columnConfig) {
                 colDef.valueGetter = columnConfig.valueGetter;
             }
-            if (propertyDef?.type === "array" && propertyDef?.items?.type === 'string') {
+            if (propertyDef?.type === 'array' && propertyDef?.items?.type === 'string') {
                 colDef.cellRenderer = ListCellRenderer;
+            }
+            if (propertyDef?.type === 'string' && propertyDef?.format === "date-time") {
+                colDef.valueFormatter = formatDateTime;
+                colDef.filter= 'agDateColumnFilter';
             }
             return colDef;
         });
