@@ -300,29 +300,48 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
         const filterModel = gridRef.current?.api.getFilterModel() as FilterModel;
 
         function convertToMultiConditionFilter() {
-            const firstFilter = filterModel[event.target.name]
-            filterModel[event.target.name] = {
-                filterType: 'text',
-                operator: 'OR',
-                conditions: [
-                    firstFilter,
-                    {
-                        filter: event.target.value as string,
-                        type: 'equals',
-                        filterType: 'text'
-                    }
-                ]
+            const firstFilter = filterModel[event.target.name];
+            if (data_type === 'string') {
+                filterModel[event.target.name] = {
+                    filterType: 'text',
+                    operator: 'OR',
+                    conditions: [
+                        firstFilter,
+                        {
+                            filter: event.target.value as string,
+                            type: 'equals',
+                            filterType: 'text'
+                        }
+                    ]
+                }
+            } else if (data_type === 'numeric_range') {
+                const [filter, filterTo] = event.target.value.split('-');
+                filterModel[event.target.name] = {
+                    filterType: 'number',
+                    operator: 'OR',
+                    conditions: [
+                        firstFilter,
+                        {
+                            filter,
+                            filterTo,
+                            type: 'inRange',
+                            filterType: 'number'
+                        }
+                    ]
+                };
+            } else {
+                throw Error(`unsupported filter data type: ${data_type}`)
             }
         }
 
         function initializeFilter() {
-            if(data_type==='string') {
+            if (data_type === 'string') {
                 filterModel[event.target.name] = {
                     filter: event.target.value as string,
                     type: 'equals',
                     filterType: 'text'
                 };
-            } else if(data_type==='numeric_range') {
+            } else if (data_type === 'numeric_range') {
                 const [filter, filterTo] = event.target.value.split('-');
                 filterModel[event.target.name] = {
                     filter,
@@ -342,13 +361,14 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
             }
         }
 
+        debugger;
         if (event.target.checked) {
             if (!(event.target.name in filterModel)) {
                 initializeFilter();
             } else if (!('conditions' in filterModel[event.target.name])) {
                 convertToMultiConditionFilter();
             }
-        } else { // uncheck
+        } else { // un-tick checkbox branch
             if ('conditions' in filterModel[event.target.name]) {
                 removeFilterCondition();
             } else {
@@ -362,7 +382,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
         gridRef.current!.api.setFilterModel(null);
         setOpenFilters({});
     };
-
 
     const handleDrawerOpen = () => {
         setOpen(true);
