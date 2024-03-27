@@ -9,3 +9,11 @@ export interface ColumnConfiguration {
     valueGetter?: string | ValueGetterFunc;
     //TODO: filters
 }
+export interface Config {
+    ENVIRONMENT:string;
+    basename:string;
+    REST_ENDPOINT_URL:string;
+    SCHEMA_ENDPOINT_URL: string;
+    RESOURCE_JSON_PATH: string;
+    GRID_CONFIG:  ColumnConfiguration[];
+}

@@ -1,5 +1,6 @@
-window.config = {
+window.appConfig = {
     "ENVIRONMENT":"demo",
+    "basename":"/",
     "REST_ENDPOINT_URL": 'https://raw.githubusercontent.com/ebi-ait/data-catalogue-frontend-elwazi/main/data/catalogue-data.json',
     "SCHEMA_ENDPOINT_URL": 'https://raw.githubusercontent.com/ebi-ait/data-catalogue-frontend-elwazi/main/data/catalogue-schema.json',
     "RESOURCE_JSON_PATH": '',

@@ -5,4 +5,4 @@ docker_config="{\"auths\":{\"$IMAGE_REPO_BASE_DOMAIN\":{\"auth\":\"(echo -n $IMA
 
 export DOCKER_CONFIG_JSON=$(echo -n $docker_config | base64)
 
-envsubst < serviceaccount.yaml | kubectl apply --namespace=dc-demo-dev -f -
+envsubst < serviceaccount.yaml | kubectl apply --namespace=${K8S_NAMESPACE} -f -

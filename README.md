@@ -54,20 +54,22 @@ title: Data Catalogue Deployment
 
 graph LR
 
-    Client --> |"ebi.ac.uk/catalogue/&lt;project&gt;\nor wwwdev"|LB
-    LB[fa:fa-sitemap LB]  --> IngressController
+    Client --> |"www.ebi.ac.uk\nor wwwdev"|LB
+    LB[fa:fa-sitemap LB]  --/catalogue/&lt;project&gt;--> IngressController
     
     subgraph WebProd
         LB
     end
 
     subgraph k8s cluster
+        
         subgraph ingress namespace
             IngressController
         end
         subgraph "catalogue-demo (k8s namespace)"
+            
             Service --> App
-            IngressController-->Ingress
+            IngressController-- /demo -->Ingress
 
             subgraph nginx container
                 
@@ -82,14 +84,14 @@ graph LR
             subgraph configmap
                 ConfigFile --> | mount | ConfigMap[catalogue config]
             end
-            Ingress --> | map /project1 to service|Service
+            Ingress --> Service
             class App,Service,ConfigMap k8s;
         end
         subgraph "2nd catalogue project (k8s namespace)"
             
             ConfigMap2
             Service2
-            IngressController-->Ingress2
+            IngressController--/project2-->Ingress2
 
             Service2 --> App2
             App2 --> ConfigMap2
@@ -97,7 +99,7 @@ graph LR
                 App2
             end
             
-            Ingress2 --> | map /project2 to service|Service2
+            Ingress2 --> Service2
 
             class App2,Service2,ConfigMap2 k8s;
         end
@@ -130,8 +132,15 @@ follow these steps:
 1. create the configuration files.
 2. connect to the k8s cluster 
 3. create a namespace
-4. run `kustomize` and deploy the configuration to your namespace
-5. test your app
+4. run `kustomize` and inspect the generated configuration
+```bash
+kustomize build k8s/overlays/<project>
+```
+5. apply the configuration to your namespace
+```bash
+kubectl apply -k k8s/overlays/<project>
+```
+6. test your app
 
 #### Connecting to a Catalogue on K8S
 

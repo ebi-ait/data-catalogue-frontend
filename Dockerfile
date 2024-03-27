@@ -1,13 +1,15 @@
 # Step 1: Build static react app
 FROM node:18-alpine AS builder
 
-# Define working directory and copy source
 WORKDIR /app
+
+COPY ./package.json ./package-lock.json ./
+
+RUN npm install
 
 COPY . .
 
-# Install dependencies and build whatever you have to build
-RUN npm install && npm run build
+RUN npm run build
 
 # Step 2: Run image
 FROM nginx:1.25.4-alpine-slim

@@ -1,49 +1,64 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: dc-demo-test
+namespace: dc-demo-dev
 nameSuffix: -demo
 resources:
-  - ../../base
+- ../../base
 labels:
-  - pairs:
-      app: data-catalogue-demo
-    includeSelectors: true
+- includeSelectors: true
+  pairs:
+    app: data-catalogue-demo
 configMapGenerator:
-  - name: app-config
-    files:
-      - config.js
-    options:
-      disableNameSuffixHash: true
-  - name: nginx-config
-    files:
-      - nginx.conf
-    options:
-      disableNameSuffixHash: true
+- files:
+  - config.js
+  name: app-config
+  options:
+    disableNameSuffixHash: true
+- files:
+  - nginx.conf
+  name: nginx-config
+  options:
+    disableNameSuffixHash: true
 
 secretGenerator:
-  - name: docker-registry-secret
-    type: kubernetes.io/dockerconfigjson
-    files:
-      - .dockerconfigjson=.dockerconfig.json
-    options:
-      disableNameSuffixHash: true
+- files:
+  - .dockerconfigjson=.dockerconfig.json
+  name: docker-registry-secret
+  options:
+    disableNameSuffixHash: true
+  type: kubernetes.io/dockerconfigjson
 
 # a patch to make sure the service account
 # and docker repo secret do not get renamed
 patchesJson6902:
-  - target:
-      version: v1
-      kind: ServiceAccount
-      name: default
-    patch: |-
-      - op: replace
-        path: /metadata/name
-        value: default
-  - target:
-      version: v1
-      kind: Secret
-      name: docker-registry-secret
-    patch: |-
-      - op: replace
-        path: /metadata/name
-        value: docker-registry-secret
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: default
+  target:
+    kind: ServiceAccount
+    name: default
+    version: v1
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: docker-registry-secret
+  target:
+    kind: Secret
+    name: docker-registry-secret
+    version: v1
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: ingress
+    - op: replace
+      path: /spec/rules/0/http/paths/0/path
+      value: /catalogue/demo(/|$)(.*)
+  target:
+    kind: Ingress
+    name: ingress
+    version: v1
+images:
+- name: data-catalogue-demo
+  newName: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo
+  newTag: 20240326-1645

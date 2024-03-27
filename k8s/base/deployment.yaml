@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: data-catalogue-app
-          image: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo:latest
+          image: data-catalogue-demo:latest
           ports:
             - containerPort: 80
           volumeMounts:
