@@ -34,9 +34,12 @@ docker-publish:
   when: manual
 
 k8s-deploy-demo:
-  image: dtzar/helm-kubectl:3.11.0
+  image: alpine:3.7
   stage: deploy
   script:
+    - apk update  && apk add --no-cache curl
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
     - mkdir -p $HOME/.kube
     - echo -n $KUBE_CONFIG | base64 -d > $HOME/.kube/config
     - kubectl config view
