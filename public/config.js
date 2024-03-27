@@ -35,10 +35,11 @@ window.appConfig = {
             "valueGetter": params => params.data.characteristics?.["project name"]?.[0]?.text
         }
     ],
+
     FILTER_FIELDS: [
         {
             field: "soilType",
-            type: "select",
+            type: "checkbox",
             data_type: "string"
         }, {
             field: "organism",
@@ -49,7 +50,7 @@ window.appConfig = {
             field: "pH",
             type: "checkbox",
             data_type: "numeric_range",
-            range_interval: 8
+            range_interval: 3
         }
     ]
 

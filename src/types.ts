@@ -38,6 +38,7 @@ export interface Filter {
     label: string;
     data_type: string;
     options: string[]
+    range_interval?:number
 }
 
 export interface Facet {
@@ -49,6 +50,7 @@ export interface Facet {
 
 export interface CatalogueProps {
     schema: any;
+    rowData: any;
 }
 
 export interface AppBarProps extends MuiAppBarProps {

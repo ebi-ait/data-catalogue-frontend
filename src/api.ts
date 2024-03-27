@@ -40,32 +40,12 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
         if (!response.ok) {
             throw new Error('Failed to fetch catalogue data');
         }
+
         const data = await response.json();
         const documents = config.RESOURCE_JSON_PATH
             .split('.')
             .reduce((result:any, current:string) => result[current], data)
 
-        return documents;
-    } catch (error) {
-        console.error('Error fetching catalogue data:', error);
-        throw error;
-    }
-};
-export const filterCatalogueData = async (): Promise<any[]> => {
-    try {
-        const response = await fetch(config.REST_ENDPOINT_URL,
-            {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-        if (!response.ok) {
-            throw new Error('Failed to fetch catalogue data');
-        }
-        const data = await response.json();
-        const documents = config.RESOURCE_JSON_PATH
-            .split('.')
-            .reduce((result:any, current:string) => result[current], data)
         return documents;
     } catch (error) {
         console.error('Error fetching catalogue data:', error);

@@ -1,11 +1,11 @@
 // Catalogue.tsx
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {ColDef, IRowNode, RowValueChangedEvent} from 'ag-grid-community';
+import {ColDef, IRowNode, RowValueChangedEvent, ValueGetterParams} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
-import {AppBarProps, CatalogueProps, ColumnConfiguration, Facet, Filter, FilterDataType} from "./types";
+import {AppBarProps, CatalogueProps, ColumnConfiguration, Facet, Filter, FilterDataType, SideFilter} from "./types";
 import MuiAppBar from "@mui/material/AppBar";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -91,8 +91,22 @@ const Main = styled("main", {shouldForwardProp: (prop) => prop !== "open"})<{
 export let facets: Facet[] = [];
 let filtersToApply: Map<string, Filter> = new Map<string, Filter>();
 
-const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
-    const [rowData, setRowData] = useState<any[]>([]);
+/**
+ *
+ * @param colDef
+ * @param data the row's data
+ * @param filterDef
+ */
+function getCellValue<T>(colDef: ColDef<any, any>, data: any):T {
+    let value;
+    if (typeof colDef.valueGetter === 'function') {
+        return colDef?.valueGetter({data} as ValueGetterParams) as T;
+    } else {
+        return data[colDef?.field as string] as T;
+    }
+}
+
+const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
     const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
     const gridRef = useRef<AgGridReact<any>>(null);
     const [openFilters, setOpenFilters] = React.useState({});
@@ -127,81 +141,78 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 }
                 return colDef;
             });
-        setColumnDefs(newColumnDefs);
 
-        const fetchData = async () => {
-            try {
-                const documents = await fetchCatalogueData();
-                setRowData(documents);
-            } catch (error) {
-                console.error('Error fetching catalogue data:', error);
-            }
-        };
-        fetchData();
-        const setFilters = () => {
+
+        const setFilters = (columnDefs: ColDef[]) => {
             facets = [];
             let filterVals: string[];
             let filterValueMap = new Map<string, number>();
-            config.FILTER_FIELDS.forEach((field: any) => {
-                //value for a single title(filter) with count
-                filterValueMap = new Map<string, number>();
+            config.FILTER_FIELDS.forEach((field: SideFilter) => {
+                const colDef = columnDefs.find((colDef:ColDef)=>colDef.field == field.field);
+                if (typeof colDef === 'undefined') {
+                    console.warn(`cannot find ColDef for ${field.field}`);
 
-                //construct range for range filters
-                if(field.data_type === FilterDataType.numeric_range ) {
-
-                    let rangeInterval = field.range_interval || 1000000;
-
-                    rowData.forEach(node => {
-                        let value = node[field.field] as number;
-                        if (value) {
-                            let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
-                            let range = rangeStart + "-" + (rangeStart + rangeInterval);
-                            if (filterValueMap.has(range)) {
-                                filterValueMap.set(range, filterValueMap.get(range)! + 1);
-                            } else {
-                                filterValueMap.set(range, 1);
-                            }
-                        }
-                    });
-
-
-                } else if (field.data_type === FilterDataType.string_range) {
-                    //NOT IMPLEMENTED
                 } else {
-                    rowData.forEach(node => {
-                        let value = node[field.field] as string;
-                        value = value.trim();
-                        if (value) {
-                            if (filterValueMap.has(value)) {
-                                filterValueMap.set(value, filterValueMap.get(value)! + 1);
-                            } else {
-                                filterValueMap.set(value, 1);
+                    filterValueMap = new Map<string, number>();
+
+                    if (field.data_type === FilterDataType.numeric_range) {
+
+                        let rangeInterval = field.range_interval || 1000000;
+                        rowData.forEach((node: any) => {
+                            let value = getCellValue(colDef, node) as number;
+                            if (value) {
+                                let rangeStart = Math.floor(value / rangeInterval) * rangeInterval;
+                                let range = rangeStart + "-" + (rangeStart + rangeInterval);
+                                if (filterValueMap.has(range)) {
+                                    filterValueMap.set(range, filterValueMap.get(range)! + 1);
+                                } else {
+                                    filterValueMap.set(range, 1);
+                                }
                             }
-                        }
+                        });
+
+
+                    } else if (field.data_type === FilterDataType.string_range) {
+                        throw new Error("NOT IMPLEMENTED");
+                    } else {
+                        rowData.forEach((node: any) => {
+                            let value = getCellValue(colDef, node) as string;
+                            value = value.trim();
+                            if (value) {
+                                if (filterValueMap.has(value)) {
+                                    filterValueMap.set(value, filterValueMap.get(value)! + 1);
+                                } else {
+                                    filterValueMap.set(value, 1);
+                                }
+                            }
+                        });
+                    }
+
+
+                    filterVals = [];
+                    if (field.type === "select") {
+                        filterVals.push(SELECT_DUMMY_VALUE);
+                    }
+                    filterValueMap.forEach((value: number, key: string) => {
+                        filterVals.push(key)
                     });
-                }
-
-
-                filterVals = [];
-                if (field.type === "select") {
-                    filterVals.push(SELECT_DUMMY_VALUE);
-                }
-                filterValueMap.forEach((value: number, key: string) => {
-                    filterVals.push(key)
-                });
-                filterVals.sort();
-                if (filterVals) {
-                    field.data_type = field.data_type||FilterDataType.string;
-                    facets.push({
-                        "label": field.field,
-                        "type": field.type,
-                        "data_type": field.data_type,
-                        "options": filterVals
-                    })
+                    filterVals.sort();
+                    if (filterVals) {
+                        field.data_type = field.data_type || FilterDataType.string;
+                        facets.push({
+                            "label": field.field,
+                            "type": field.type,
+                            "data_type": field.data_type,
+                            "options": filterVals
+                        })
+                    }
                 }
             });
         };
-        setFilters();
+
+        setColumnDefs(newColumnDefs);
+        // FIXME amnon: passing the columnDefs as a parameter  is a quick and dirty workaround.
+        setFilters(newColumnDefs);
 
     }, [schema]);
 
@@ -218,11 +229,16 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
             if (node.data) {
                 filtersToApply.forEach((filter, filterCategory) => {
                         let record = node.data! as any;
-
                         if (prevCategory !== "" && prevCategory !== filterCategory && !isMatched) {
                             return false;
                         }
-
+                        const colDef = gridRef.current?.api?.getColumnDefs()?.find((colDef:ColDef)=>colDef.field == filter.label);
+                        let cellValue : any;
+                        if (typeof colDef === 'undefined') {
+                            console.warn(`cannot find ColDef for ${filter.label}`);
+                        } else {
+                            cellValue = getCellValue(colDef, record);
+                        }
                         if (filter.data_type === "numeric_range") {
                             isMatched = false;
                             filter.options.forEach((range) => {
@@ -231,7 +247,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                                     let rangeStartEnd = range.split("-");
                                     let rangeStart = rangeStartEnd[0] as unknown as number;
                                     let rangeEnd = rangeStartEnd[1] as unknown as number;
-                                    let cellValue = record[filter.label];
                                     if (cellValue) {
                                         let cellValueNumber = cellValue as number;
                                         if ((cellValueNumber >= rangeStart && cellValueNumber < rangeEnd)) {
@@ -242,7 +257,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                             });
 
                         } else {
-                            if (!filter.options.includes(record[filter.label] as string)) {
+                            if (!filter.options.includes(cellValue  as string)) {
                                 isMatched = false;
                             }
                         }
