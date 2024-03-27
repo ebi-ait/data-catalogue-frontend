@@ -34,6 +34,7 @@ docker-publish:
 k8s-deploy-demo:
   image: dtzar/helm-kubectl:3.11.0
   stage: deploy
+  script:
     - kubectl config set-cluster hx-wp-webadmin-17 --server="${K8_HX_SERVER}"
     - kubectl config set clusters.hx-wp-webadmin-17.certificate-authority-data ${K8_HX_CERTIFICATE_AUTHORITY_DATA}
     - kubectl config set-credentials team-admin-hx-wp-webadmin-17 --token="${K8_HX_USER_TOKEN}"
