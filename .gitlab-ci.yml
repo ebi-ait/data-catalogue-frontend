@@ -35,11 +35,13 @@ k8s-deploy-demo:
   image: dtzar/helm-kubectl:3.11.0
   stage: deploy
   script:
-    - kubectl config set-cluster hx-wp-webadmin-17 --server="${K8_HX_SERVER}"
-    - kubectl config set clusters.hx-wp-webadmin-17.certificate-authority-data ${K8_HX_CERTIFICATE_AUTHORITY_DATA}
-    - kubectl config set-credentials team-admin-hx-wp-webadmin-17 --token="${K8_HX_USER_TOKEN}"
-    - kubectl config set-context dc-demo-dev --cluster=hx-wp-webadmin-17 --user=team-admin-hx-wp-webadmin-17
-    - kubectl config use-context dc-demo-dev
+    - kubectl config set clusters.ena-cluster.server https://hx-rke-wp-webadmin-17-master-1.caas.ebi.ac.uk:6443
+    - kubectl config set clusters.ena-cluster.certificate-authority-data ${K8_HX_CERTIFICATE_AUTHORITY_DATA}
+    - kubectl config set users.ena-admin.token ${K8_HX_USER_TOKEN}
+    - kubectl config set contexts.dc-demo.cluster ena-cluster
+    - kubectl config set contexts.dc-demo.user ena-admin
+    - kubectl config set contexts.dc-demo.namespace dc-demo-dev
+    - kubectl config use-context dc-demo
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     - cp .secure_files/.dockerconfig.json ./k8s/overlays/demo/
     - kustomize build k8s/overlays/demo
