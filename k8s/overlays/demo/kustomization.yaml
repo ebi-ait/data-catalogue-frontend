@@ -61,4 +61,4 @@ patchesJson6902:
 images:
 - name: data-catalogue-demo
   newName: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo
-  newTag: 20240327-1737
+  newTag: 20240328-1050
