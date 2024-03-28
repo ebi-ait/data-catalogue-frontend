@@ -40,8 +40,8 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
         if (!response.ok) {
             throw new Error('Failed to fetch catalogue data');
         }
+
         const data = await response.json();
-        // const documents = data?._embedded[window.config.RESOURCE_TYPE_PLURAL] ?? [];
         const documents = config.RESOURCE_JSON_PATH
             .split('.')
             .reduce((result:any, current:string) => result[current], data)
@@ -52,3 +52,4 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
         throw error;
     }
 };
+
