@@ -34,7 +34,7 @@ docker-publish:
   when: manual
 
 k8s-deploy-demo:
-#  image: registry.k8s.io/kustomize/kustomize:v5.0.0
+  image: ubuntu:latest
   stage: deploy
   script:
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
