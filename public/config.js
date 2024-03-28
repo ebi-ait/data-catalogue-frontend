@@ -23,6 +23,23 @@ window.appConfig = {
             valueGetter: params => params.data.characteristics?.["soil type"]?.[0].text
         },
         {
+            "name": "collectionDate",
+            valueGetter: params => params.data.characteristics?.["collection date"]?.[0].text
+        },
+       {
+            "name": "broadScaleEnvironmentalContext",
+            valueGetter: params => params.data.characteristics?.["broad-scale environmental context"]?.[0].text
+        },       {
+            "name": "environmentalMedium",
+            valueGetter: params => params.data.characteristics?.["environmental medium"]?.[0].text
+        },       {
+            "name": "regionAndLocality",
+            valueGetter: params => params.data.characteristics?.["geographic location (region and locality)"]?.[0].text
+        },       {
+            "name": "countryAndOrSea))",
+            valueGetter: params => params.data.characteristics?.["geographic location (country and/or sea)"]?.[0].text
+        },
+        {
             "name": "pH",
             valueGetter: params => params.data.characteristics?.pH?.[0].text
         },
