@@ -186,7 +186,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                     } else {
                         rowData.forEach((node: any) => {
                             let value = getCellValue(colDef, node) as string;
-                            value = value.trim();
+                            value = value?.trim();
                             if (value) {
                                 if (filterValueMap.has(value)) {
                                     filterValueMap.set(value, filterValueMap.get(value)! + 1);
@@ -361,7 +361,6 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
             }
         }
 
-        debugger;
         if (event.target.checked) {
             if (!(event.target.name in filterModel)) {
                 initializeFilter();
