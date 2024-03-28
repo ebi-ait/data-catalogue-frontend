@@ -21,7 +21,6 @@ npm-build:
     - npm run build
   only:
     - ci-test
-  when: manual
 
 docker-publish:
   stage: package
@@ -31,7 +30,6 @@ docker-publish:
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
   only:
     - ci-test
-  when: manual
 
 k8s-deploy-demo:
   image: dtzar/helm-kubectl:3.11.0
@@ -43,25 +41,11 @@ k8s-deploy-demo:
     - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
     - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
     - mkdir -p $HOME/.kube
-#    - echo $KUBE_CONFIG
     - cp .secure_files/config ~/.kube/config
-#    - echo -n $KUBE_CONFIG | base64 -d > $HOME/.kube/config
     - kubectl config view
-#    - kubectl config unset contexts
-#    - kubectl config unset users
-#    - kubectl config unset clusters
-#    - kubectl config set clusters.ena-cluster.server $K8_HX_SERVER
-#    - kubectl config set clusters.ena-cluster.certificate-authority-data "$K8_HX_CERTIFICATE_AUTHORITY_DATA"
-#    - kubectl config set users.ena-admin.token "$K8_HX_USER_TOKEN"
-#    - kubectl config set contexts.dc-demo.cluster ena-cluster
-#    - kubectl config set contexts.dc-demo.user ena-admin
-#    - kubectl config set contexts.dc-demo.namespace dc-demo-dev
-#    - kubectl config use-context dc-demo
     - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - ./kustomize build k8s/overlays/demo
     - kubectl apply -k k8s/overlays/demo --namespace=dc-demo-dev
-#  tags:
-#    - ena-dcap-gitlab-runner
   only:
     - ci-test
   when: manual
