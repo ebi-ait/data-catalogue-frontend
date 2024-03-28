@@ -59,8 +59,8 @@ k8s-deploy-demo:
 #    - kubectl config use-context dc-demo
     - kustomize build k8s/overlays/demo
     - kubectl apply -f k8s/overlays/demo --namespace=dc-demo-dev
-  tags:
-    - ena-dcap-gitlab-runner
+#  tags:
+#    - ena-dcap-gitlab-runner
   only:
     - ci-test
   when: manual
