@@ -3,7 +3,6 @@ import React, {useState} from 'react';
 import {JsonForms} from '@jsonforms/react';
 import {materialCells, materialRenderers} from '@jsonforms/material-renderers';
 import style from "./Form.module.css";
-import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 
 interface FormProps {
     schema: any;
