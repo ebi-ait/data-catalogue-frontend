@@ -59,7 +59,7 @@ k8s-deploy-demo:
 #    - kubectl config use-context dc-demo
     - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - ./kustomize build k8s/overlays/demo
-    - kubectl apply -f k8s/overlays/demo --namespace=dc-demo-dev
+    - kubectl apply -k k8s/overlays/demo --namespace=dc-demo-dev
 #  tags:
 #    - ena-dcap-gitlab-runner
   only:
