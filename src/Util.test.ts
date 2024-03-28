@@ -1,4 +1,3 @@
-import {ColumnConfiguration} from "./types";
 import {shouldHideColumn} from "./Util";
 
 test('test column hiding', () => {
