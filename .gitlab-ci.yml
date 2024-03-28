@@ -34,7 +34,7 @@ docker-publish:
   when: manual
 
 k8s-deploy-demo:
-  image: ubuntu:latest
+  image: dtzar/helm-kubectl:3.11.0
   stage: deploy
   script:
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
@@ -59,6 +59,8 @@ k8s-deploy-demo:
 #    - kubectl config use-context dc-demo
     - kustomize build k8s/overlays/demo
     - kubectl apply -f k8s/overlays/demo --namespace=dc-demo-dev
+  tags:
+    - ena-dcap-gitlab-runner
   only:
     - ci-test
   when: manual
