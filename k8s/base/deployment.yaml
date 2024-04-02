@@ -28,7 +28,7 @@ spec:
       volumes:
         - name: app-config-volume
           configMap:
-            name: app-config-demo
+            name: app-config
         - name: nginx-config-volume
           configMap:
             name: nginx-config
