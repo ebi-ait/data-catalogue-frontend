@@ -1,11 +1,13 @@
 window.appConfig = {
-    "ENVIRONMENT":"demo",
-    "basename":"/",
-    "REST_ENDPOINT_URL": '/biosamples/samples?filter=attr%3Aproject+name%3AMICROBE&filter=attr%3Acenter&size=200',    "SCHEMA_ENDPOINT_URL": '/biosamples/schemas/core/sample.json',
+    "ENVIRONMENT": "demo",
+    "basename": "/",
+    "REST_ENDPOINT_URL": '/biosamples/samples?filter=attr%3Aproject+name%3AMICROBE&filter=attr%3Acenter&filter=attr%3Apreservation%20temperature&filter=attr%3Atest%3Ayes&size=200',
+    "SCHEMA_ENDPOINT_URL": '/biosamples/schemas/core/sample.json',
     "RESOURCE_JSON_PATH": '_embedded.samples',
-    "GRID_CONFIG":  [
+    "GRID_CONFIG": [
         {
             "name": "name",
+            "headerValueGetter": params=> params.colDef.field.replace(/[ab]/,'%')
         },
         {
             "name": "release",
@@ -28,7 +30,7 @@ window.appConfig = {
         {
             "name": "freezingMethod",
             valueGetter: params => params.data.characteristics?.["freezing method"]?.[0]?.text
-        },        {
+        }, {
             "name": "cultivation",
             valueGetter: params => params.data.characteristics?.cultivation?.[0]?.text
         },
@@ -48,7 +50,7 @@ window.appConfig = {
             "name": "preservationTemperature",
             valueGetter: params => params.data.characteristics?.["preservation temperature"]?.[0].text
         },
-       {
+        {
             "name": "broadScaleEnvironmentalContext",
             valueGetter: params => params.data.characteristics?.["broad-scale environmental context"]?.[0].text
         },
@@ -85,16 +87,21 @@ window.appConfig = {
             data_type: "string"
         },
         {
+            field: "name",
+            type: "checkbox",
+            data_type: "string"
+        },
+        {
             field: "organism",
             type: "checkbox",
             data_type: "string"
         },
-       {
+        {
             field: "cultivation",
             type: "checkbox",
             data_type: "string"
         },
-       {
+        {
             field: "cryoprotectant",
             type: "checkbox",
             data_type: "string"

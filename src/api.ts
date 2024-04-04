@@ -1,7 +1,5 @@
 // api.ts
 
-const config = window?.appConfig;
-
 export const fetchSchema = async (): Promise<any> => {
     function fixSchemaIdAttribute(schemaData: { [x: string]: any; id: any; }) {
         if ('id' in schemaData) {
@@ -11,7 +9,7 @@ export const fetchSchema = async (): Promise<any> => {
     }
 
     try {
-        const response = await fetch(config.SCHEMA_ENDPOINT_URL,
+        const response = await fetch(window?.appConfig.SCHEMA_ENDPOINT_URL,
             {
                 headers: {
                     'Accept': 'application/json'
@@ -31,7 +29,7 @@ export const fetchSchema = async (): Promise<any> => {
 
 export const fetchCatalogueData = async (): Promise<any[]> => {
     try {
-        const response = await fetch(config.REST_ENDPOINT_URL,
+        const response = await fetch(window?.appConfig.REST_ENDPOINT_URL,
             {
                 headers: {
                     'Accept': 'application/json'
@@ -42,11 +40,13 @@ export const fetchCatalogueData = async (): Promise<any[]> => {
         }
 
         const data = await response.json();
-        const documents = config.RESOURCE_JSON_PATH
-            .split('.')
-            .reduce((result:any, current:string) => result[current], data)
-
-        return documents;
+        if (Array.isArray(data)) {
+            return data;
+        } else {
+            return window?.appConfig.RESOURCE_JSON_PATH
+                .split('.')
+                .reduce((result: any, current: string) => result[current], data);
+        }
     } catch (error) {
         console.error('Error fetching catalogue data:', error);
         throw error;

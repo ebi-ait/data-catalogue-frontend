@@ -1,5 +1,5 @@
 :root {
-    --color-main: #ffffff;
+
     --color-secondary: #deafe5;
     --color-background: #234345;
 
@@ -8,7 +8,7 @@
     --color-font-link: #6a72cb;
 
     /* grid colors */
-    --color-grid-odd-row: #e1e1e1;
+
 
     --font-main: "DejaVu Sans", serif;
 }

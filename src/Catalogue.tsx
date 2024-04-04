@@ -138,6 +138,9 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                     hide: shouldHideColumn(columnConfig.name),
                     filter: true,
                 };
+                if ('headerValueGetter' in columnConfig) {
+                    colDef.headerValueGetter = columnConfig.headerValueGetter
+                }
                 if ('valueGetter' in columnConfig) {
                     colDef.valueGetter = columnConfig.valueGetter;
                 }
@@ -299,55 +302,54 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>, data_type: string) => {
         const filterModel = gridRef.current?.api.getFilterModel() as FilterModel;
 
-        function convertToMultiConditionFilter() {
-            const firstFilter = filterModel[event.target.name];
+        function addFilterCondition() {
+
             if (data_type === 'string') {
-                filterModel[event.target.name] = {
-                    filterType: 'text',
-                    operator: 'OR',
-                    conditions: [
-                        firstFilter,
-                        {
-                            filter: event.target.value as string,
-                            type: 'equals',
-                            filterType: 'text'
-                        }
-                    ]
-                }
+                const newCondition = {
+                    filter: event.target.value as string,
+                    type: 'equals',
+                    filterType: 'text'
+                };
+                filterModel[event.target.name].conditions.push(newCondition);
             } else if (data_type === 'numeric_range') {
                 const [filter, filterTo] = event.target.value.split('-');
-                filterModel[event.target.name] = {
+                const newCondition = {
+                    filter,
+                    filterTo,
+                    type: 'inRange',
                     filterType: 'number',
-                    operator: 'OR',
-                    conditions: [
-                        firstFilter,
-                        {
-                            filter,
-                            filterTo,
-                            type: 'inRange',
-                            filterType: 'number'
-                        }
-                    ]
-                };
+                }
+                filterModel[event.target.name].conditions.push(newCondition);
             } else {
                 throw Error(`unsupported filter data type: ${data_type}`)
             }
+
         }
 
         function initializeFilter() {
             if (data_type === 'string') {
                 filterModel[event.target.name] = {
-                    filter: event.target.value as string,
-                    type: 'equals',
-                    filterType: 'text'
+                    filterType: 'text',
+                    operator: 'OR',
+                    conditions: [{
+                        filter: event.target.value as string,
+                        type: 'equals',
+                        filterType: 'text',
+                    }],
+                    maxNumConditions: 10
                 };
             } else if (data_type === 'numeric_range') {
                 const [filter, filterTo] = event.target.value.split('-');
                 filterModel[event.target.name] = {
-                    filter,
-                    filterTo,
-                    type: 'inRange',
-                    filterType: 'number'
+                    filterType: 'number',
+                    operator: 'OR',
+                    conditions: [{
+                        filter,
+                        filterTo,
+                        type: 'inRange',
+                        filterType: 'number',
+                    }],
+                    maxNumConditions: 10
                 };
             } else {
                 throw Error(`unsupported filter data type: ${data_type}`)
@@ -356,7 +358,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
 
         function removeFilterCondition() {
             filterModel[event.target.name].conditions = filterModel[event.target.name].conditions.filter((c: any) => c.filter !== event.target.value)
-            if (filterModel[event.target.name].conditions.length == 0) {
+            if (filterModel[event.target.name].conditions.length === 0) {
                 delete filterModel[event.target.name];
             }
         }
@@ -364,8 +366,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
         if (event.target.checked) {
             if (!(event.target.name in filterModel)) {
                 initializeFilter();
-            } else if (!('conditions' in filterModel[event.target.name])) {
-                convertToMultiConditionFilter();
+            } else {
+                addFilterCondition();
             }
         } else { // un-tick checkbox branch
             if ('conditions' in filterModel[event.target.name]) {
@@ -552,8 +554,8 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                         ref={gridRef}
                         pagination={true}
                         paginationPageSize={10}
-                        isExternalFilterPresent={isExternalFilterPresent}
-                        doesExternalFilterPass={doesExternalFilterPass}
+                        // isExternalFilterPresent={isExternalFilterPresent}
+                        // doesExternalFilterPass={doesExternalFilterPass}
                     />
                 </Main>
 

@@ -1,11 +1,8 @@
 // App.tsx
 import React, {useEffect, useState} from 'react';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
-import Form from './Form';
 import Catalogue from './Catalogue';
 import {fetchCatalogueData, fetchSchema} from './api';
-
-const config = window?.appConfig;
 
 const App: React.FC = () => {
     const [schema, setSchema] = useState<any>(null);
@@ -36,7 +33,7 @@ const App: React.FC = () => {
     return (
 
         ((schema && rowData.length>0) ?
-                <Router basename={config.basename}>
+                <Router basename={window?.appConfig.basename}>
                     <Routes>
                         <Route path="/" element={<Catalogue schema={schema}
                                                             rowData={rowData}/>}/>

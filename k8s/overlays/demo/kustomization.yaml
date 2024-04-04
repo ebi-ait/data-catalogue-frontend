@@ -54,6 +54,9 @@ patchesJson6902:
     - op: replace
       path: /spec/rules/0/http/paths/0/path
       value: /catalogue/demo(/|$)(.*)
+    - op: replace
+      path: /spec/rules/0/http/paths/0/backend/service/name
+      value: data-catalogue-demo
   target:
     kind: Ingress
     name: ingress
@@ -61,4 +64,4 @@ patchesJson6902:
 images:
 - name: data-catalogue-demo
   newName: dockerhub.ebi.ac.uk/fairification/data-catalogue-demo
-  newTag: 20240328-1050
+  newTag: 20240403-1229

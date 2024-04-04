@@ -1,12 +1,20 @@
 window.appConfig = {
     "ENVIRONMENT": "demo",
     "basename": "/catalogue/demo",
-    "REST_ENDPOINT_URL": '/biosamples/samples?filter=attr%3Aproject+name%3AMICROBE&filter=attr%3Acenter&size=200',
+    "REST_ENDPOINT_URL": '/biosamples/samples?filter=attr%3Aproject+name%3AMICROBE&filter=attr%3Acenter&filter=attr%3Apreservation%20temperature&filter=attr%3Atest%3Ayes&size=200',
     "SCHEMA_ENDPOINT_URL": '/biosamples/schemas/core/sample.json',
     "RESOURCE_JSON_PATH": '_embedded.samples',
     "GRID_CONFIG": [
         {
             "name": "name",
+        },
+        {
+            "name": "center",
+            valueGetter: params => params.data.characteristics?.center[0]?.text
+        },
+        {
+            "name": "timepoint",
+            valueGetter: params => params.data.characteristics?.["time point"][0]?.text
         },
         {
             "name": "release",
@@ -22,10 +30,7 @@ window.appConfig = {
             "name": "biome",
             valueGetter: params => params.data.characteristics?.biome?.[0]?.text
         },
-        {
-            "name": "center",
-            valueGetter: params => params.data.characteristics?.center?.[0]?.text
-        },
+
         {
             "name": "freezingMethod",
             valueGetter: params => params.data.characteristics?.["freezing method"]?.[0]?.text
@@ -62,7 +67,7 @@ window.appConfig = {
             valueGetter: params => params.data.characteristics?.["geographic location (region and locality)"]?.[0].text
         },
         {
-            "name": "countryAndOrSea))",
+            "name": "countryAndOrSea",
             valueGetter: params => params.data.characteristics?.["geographic location (country and/or sea)"]?.[0].text
         },
         {
@@ -92,6 +97,13 @@ window.appConfig = {
         },
         {
             field: "cultivation",
+            type: "checkbox",
+            data_type: "string"
+        },
+        ,
+        //time point
+        {
+            field: "timepoint",
             type: "checkbox",
             data_type: "string"
         },

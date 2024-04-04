@@ -1,4 +1,4 @@
-import {ValueGetterFunc} from "ag-grid-community";
+import {HeaderValueGetterFunc, ValueGetterFunc} from "ag-grid-community";
 import {AppBarProps as MuiAppBarProps} from "@mui/material";
 
 export const HIDE_COLUMN_KEY: string = 'hide';
@@ -8,6 +8,7 @@ export interface ColumnConfiguration {
     hide?: boolean;
     field?: string;
     valueGetter?: string | ValueGetterFunc;
+    headerValueGetter?: string | HeaderValueGetterFunc;
     type?: string;
 }
 export interface Config {

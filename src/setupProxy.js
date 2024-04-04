@@ -4,7 +4,7 @@ module.exports = function(app) {
     app.use(
         '/biosamples',
         createProxyMiddleware({
-            target: 'https://www.ebi.ac.uk/',
+            target: 'https://wwwdev.ebi.ac.uk/',
             changeOrigin: true,
         })
     );

@@ -129,9 +129,15 @@ In order to create a catalogue for a new project you would need to
 follow these steps:
 
 ### on k8s
+
+Prerequisites:
+1. kubectl - should be comptible with cluster version
+2. cluster connection - get from cluster admin, team leader
+
+Instructions:
 1. create the configuration files.
 2. connect to the k8s cluster 
-3. create a namespace
+3. create a namespace: `kubectl create namespace <namespace>`
 4. run `kustomize` and inspect the generated configuration
 ```bash
 kustomize build k8s/overlays/<project>
