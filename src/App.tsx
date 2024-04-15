@@ -1,6 +1,5 @@
-
-import { Admin, Resource, ListGuesser, EditGuesser, ShowGuesser } from 'react-admin';
-import { dataProvider } from './dataProvider';
+import {Admin, Resource} from 'react-admin';
+import {dataProvider} from './dataProvider';
 import {SampleList, SampleShow} from "./samples";
 import ColorizeIcon from '@mui/icons-material/Colorize';
 

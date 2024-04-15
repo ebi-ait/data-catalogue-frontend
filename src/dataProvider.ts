@@ -5,38 +5,39 @@ const httpClient = fetchUtils.fetchJson;
 
 const apiUrl = import.meta.env.VITE_SIMPLE_REST_URL
 
-function buildFilterQueryString(filter: any) {
-    const filterType = filter.field=='accession'?'acc':'attr';
-    if(filterType=="acc") {
-        return `acc%3A${filter.value}`
-    } else {
-        // TODO support other filter types. See https://www.ebi.ac.uk/biosamples/docs/references/filters
-        return `attr%3A${filter.field}%3A${filter.value}`
-    }
-}
-
-function addUserFilter(params: GetListParams) {
-    let userFilter: string = ''
-    if (params?.filter?.field) {
-        const filterQueryString = buildFilterQueryString(params.filter)
-
-        userFilter = `&filter=${filterQueryString}`;
-    }
-    return userFilter;
+function buildFilterQuery(filter: any):string[] {
+    return (filter===undefined)?[]:Object.entries(filter)
+        .flatMap(([attr,values])=> {
+            if (attr == 'accession') {
+                return `acc:${filter.value}`
+            } else if (attr .startsWith('characteristics.')) {
+                const attributeName = attr.replace('characteristics.', '');
+                return values.map(value=>(`attr:${attributeName}:${value}`));
+            } else {
+                // TODO support other filter types. See https://www.ebi.ac.uk/biosamples/docs/references/filters
+                debugger;
+                const errorMessage = `attribute not not supported for filtering: ${attr}`;
+                console.error(errorMessage)
+                throw Error(errorMessage)
+            }
+        })
+        ;
 }
 
 export const dataProvider = {
     getList: (resource: string, params: GetListParams): Promise<GetListResult> => {
         const {page, perPage} = params.pagination;
-        const {field, order} = params.sort;
+        const {field, order} = params?.sort;
         const query = {
+            page:page-1, // NOTE react admin starts the page count from 1, but spring starts from 0
             size: perPage,
+            filter:[] as string[]
         };
-        const initialFilter: string = '&filter=attr%3Aproject+name%3AMICROBE'
-            + '&filter=attr%3Acenter'
-            + '&filter=attr%3Apreservation%20temperature';
-        let userFilter = addUserFilter(params);
-        const url = `${apiUrl}/${resource}?${stringify(query)}${initialFilter}${userFilter}`;
+        const initialFilter: string =
+            '&filter=attr%3Aproject+name%3AMICROBE'
+            + '&filter=attr%3Acenter';
+        query.filter = query.filter.concat(buildFilterQuery(params.filter));
+        const url = `${apiUrl}/${resource}?${stringify(query)}${initialFilter}`;
         return httpClient(url, {method: 'GET'})
             .then(response => {
                 const {json} = response
@@ -46,7 +47,8 @@ export const dataProvider = {
                     data,
                     pageInfo: {
                         hasNextPage: json?._links?.next ?? false
-                    }
+                    },
+                    total: json.page.totalElements
                 }
             });
     },
@@ -58,8 +60,12 @@ export const dataProvider = {
                 return {data: {id: json.accession, ...json}};
             });
     },
-    getMany: (resource, params) => {
-        console.log(`resource: ${resource}, params: ${JSON.stringify(params)}`);
-    }
+    getMany: (resource, params) => console.log(`resource: ${resource}, params: ${JSON.stringify(params)}`),
 
+    getManyReference: (resource, params) => console.error(`unsupported operation`),
+    update: (resource, params) => console.error(`unsupported operation`),
+    updateMany: (resource, params) => console.error(`unsupported operation`),
+    create: (resource, params) => console.error(`unsupported operation`),
+    delete: (resource, params) => console.error(`unsupported operation`),
+    deleteMany: (resource, params) => console.error(`unsupported operation`),
 };
