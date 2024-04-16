@@ -1,23 +1,25 @@
 import {
-    ArrayField,
+    ArrayField, Button,
     Datagrid,
-    DateField, Filter,
+    DateField, ExportButton, Filter, FilterButton,
     FilterLiveSearch,
-    List, Pagination, SelectArrayInput,
+    List, Pagination, SavedQueriesList, SelectArrayInput, SelectColumnsButton,
     Show,
     SimpleShowLayout,
     SingleFieldList,
-    TextField
+    TextField, TopToolbar, useListContext
 } from 'react-admin';
 import React from "react";
 import {Card, CardContent} from '@mui/material';
+import ContentFilter from '@mui/icons-material/FilterList';
+
 import FieldValuesFilter from "./FieldValuesFilter";
 
-
-export const FilterSidebar = () => (
+ const FilterSidebar = () => (
     <Card sx={{ order: -1}}>
         <CardContent>
-            <FilterLiveSearch />
+            <FilterLiveSearch source="text" label="Search" />
+
             <FieldValuesFilter column="characteristics.soil type" valueGetter={(data)=>data.characteristics?.["soil type"]?.[0]?.text}/>
             <FieldValuesFilter column="characteristics.organism" valueGetter={(data)=>data.characteristics?.organism?.[0]?.text}/>
             <FieldValuesFilter column="characteristics.cultivation" valueGetter={(data)=>data.characteristics?.cultivation?.[0]?.text}/>
@@ -40,8 +42,12 @@ export const SampleList = () => {
                 <ArrayField source="characteristics.center" label="Center">
                     <SingleFieldList linkType={false}><TextField source="text"/></SingleFieldList>
                 </ArrayField>
-                <ArrayField source="characteristics.time point" label="Time Point">< SingleFieldList
-                    linkType={false}><TextField source="text"/></SingleFieldList></ArrayField>
+                <ArrayField source="characteristics.time point" label="Time Point">
+                    < SingleFieldList linkType={false}>
+                        <TextField source="text"/>
+                        <TextField source="unit"/>
+                    </SingleFieldList>
+                </ArrayField>
                 <ArrayField source="characteristics.organism" label="Organism"> <SingleFieldList
                     linkType={false}><TextField source="text"/></SingleFieldList></ArrayField>
                 <ArrayField source="characteristics.biome" label="Biome"> <SingleFieldList linkType={false}><TextField
@@ -55,10 +61,14 @@ export const SampleList = () => {
                 <ArrayField source="characteristics.soil type" label="Soil Type"> <SingleFieldList
                     linkType={false}><TextField source="text"/></SingleFieldList></ArrayField>
                 <ArrayField source="characteristics.preservation temperature" label="Preservation Temperature">
-                    <SingleFieldList linkType={false}><TextField source="text"/></SingleFieldList></ArrayField>
+                    <SingleFieldList linkType={false}><TextField source="text"/></SingleFieldList>
+                </ArrayField>
                 <ArrayField source="characteristics.broad-scale environmental context"
-                            label="Broad-scale Environmental Context"> <SingleFieldList linkType={false}><TextField
-                    source="text"/></SingleFieldList></ArrayField>
+                            label="Broad-scale Environmental Context">
+                    <SingleFieldList linkType={false}>
+                        <TextField source="text"/>
+                    </SingleFieldList>
+                </ArrayField>
                 <ArrayField source="characteristics.environmental medium" label="Environmental Medium"> <SingleFieldList
                     linkType={false}><TextField source="text"/></SingleFieldList></ArrayField>
                 <ArrayField source="characteristics.geographic location (region and locality)"

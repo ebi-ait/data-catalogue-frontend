@@ -55,6 +55,7 @@ const FieldValuesFilter = (props) => {
                     // TODO allow multiple selection
                     <FilterListItem
                         label={value}
+                        key={value}
                         value={Object.fromEntries([[column, value]])}
                         isSelected={isSelected}
                         toggleFilter={toggleFilter}

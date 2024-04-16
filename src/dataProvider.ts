@@ -15,7 +15,6 @@ function buildFilterQuery(filter: any):string[] {
                 return values.map(value=>(`attr:${attributeName}:${value}`));
             } else {
                 // TODO support other filter types. See https://www.ebi.ac.uk/biosamples/docs/references/filters
-                debugger;
                 const errorMessage = `attribute not not supported for filtering: ${attr}`;
                 console.error(errorMessage)
                 throw Error(errorMessage)
@@ -24,20 +23,31 @@ function buildFilterQuery(filter: any):string[] {
         ;
 }
 
+interface ApiQuery {
+    page: number;
+    size: number;
+    filter: string[];
+    text?:string;
+}
+
 export const dataProvider = {
     getList: (resource: string, params: GetListParams): Promise<GetListResult> => {
         const {page, perPage} = params.pagination;
         const {field, order} = params?.sort;
-        const query = {
+        const apiQuery: ApiQuery = {
             page:page-1, // NOTE react admin starts the page count from 1, but spring starts from 0
             size: perPage,
-            filter:[] as string[]
+            filter:[] as string[],
         };
         const initialFilter: string =
             '&filter=attr%3Aproject+name%3AMICROBE'
             + '&filter=attr%3Acenter';
-        query.filter = query.filter.concat(buildFilterQuery(params.filter));
-        const url = `${apiUrl}/${resource}?${stringify(query)}${initialFilter}`;
+        if (params?.filter?.text) {
+            apiQuery['text'] = `${params.filter.text}*`;
+            delete params.filter.text;
+        }
+        apiQuery.filter = apiQuery.filter.concat(buildFilterQuery(params.filter));
+        const url = `${apiUrl}/${resource}?${stringify(apiQuery)}${initialFilter}`;
         return httpClient(url, {method: 'GET'})
             .then(response => {
                 const {json} = response
