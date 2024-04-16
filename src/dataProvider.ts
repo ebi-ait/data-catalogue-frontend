@@ -44,9 +44,9 @@ export const dataProvider = {
             + '&filter=attr%3Acenter';
         if (params?.filter?.text) {
             apiQuery['text'] = `${params.filter.text}*`;
-            delete params.filter.text;
         }
-        apiQuery.filter = apiQuery.filter.concat(buildFilterQuery(params.filter));
+        const {text, filterNotText} = params.filter;
+        apiQuery.filter = apiQuery.filter.concat(buildFilterQuery(filterNotText));
         const url = `${apiUrl}/${resource}?${stringify(apiQuery)}${initialFilter}`;
         return httpClient(url, {method: 'GET'})
             .then(response => {
