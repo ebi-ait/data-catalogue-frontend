@@ -42,11 +42,14 @@ export const dataProvider = {
         const initialFilter: string =
             '&filter=attr%3Aproject+name%3AMICROBE'
             + '&filter=attr%3Acenter';
-        if (params?.filter?.text) {
-            apiQuery['text'] = `${params.filter.text}*`;
+        if(params.filter){
+            const {...filterExcludingText} = params.filter;
+            if (params?.filter?.text) {
+                apiQuery['text'] = `${params.filter.text}*`;
+                delete filterExcludingText['text'];
+            }
+            apiQuery.filter = apiQuery.filter.concat(buildFilterQuery(filterExcludingText));
         }
-        const {text, filterNotText} = params.filter;
-        apiQuery.filter = apiQuery.filter.concat(buildFilterQuery(filterNotText));
         const url = `${apiUrl}/${resource}?${stringify(apiQuery)}${initialFilter}`;
         return httpClient(url, {method: 'GET'})
             .then(response => {
@@ -60,6 +63,11 @@ export const dataProvider = {
                     },
                     total: json.page.totalElements
                 }
+            })
+            .catch((reason)=> {
+                console.error(`error requesting url: ${url}`);
+                console.error(reason);
+                return {data:[], total:0}
             });
     },
     getOne: (resource: string, params: GetOneParams): Promise<GetOneResult> => {

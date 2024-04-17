@@ -18,8 +18,8 @@ const FieldValuesFilter = (props) => {
     const toggleFilter = (value, filters) => {
         const [selectedKey, selectedValue] = Object.entries(value)[0];
         if (selectedKey in filters) {
-            if (filters?.[selectedKey] == selectedValue) {
-                filters[selectedKey] = filters[selectedKey].filter(v=>v!==selectedValue)
+            if (filters?.[selectedKey].find((v)=>v === selectedValue)) {
+                filters[selectedKey] = filters[selectedKey].filter((v)=>v!==selectedValue)
                 if(filters[selectedKey].length==0) {
                     delete filters[selectedKey];
                 }
