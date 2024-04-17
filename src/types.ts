@@ -13,6 +13,7 @@ export interface ColumnConfiguration {
 }
 export interface Config {
     ENVIRONMENT:string;
+    title: string;
     basename:string;
     REST_ENDPOINT_URL:string;
     SCHEMA_ENDPOINT_URL: string;

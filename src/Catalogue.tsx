@@ -440,7 +440,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema, rowData}) => {
                             <MenuIcon/>
                         </IconButton>
                         <Typography variant="h6" noWrap component="div">
-                            Data Catalogue
+                            {config.title ?? "Data Catalogue"}
                         </Typography>
                     </Toolbar>
                 </AppBar>
