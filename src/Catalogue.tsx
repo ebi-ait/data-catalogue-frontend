@@ -5,6 +5,8 @@ import {ColDef, IRowNode, RowValueChangedEvent} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {fetchCatalogueData} from './api';
+// @ts-ignore
+import { DataGridDemo } from 'ait-grid-library';
 import {AppBarProps, CatalogueProps, ColumnConfiguration, Facet, Filter, FilterDataType} from "./types";
 import MuiAppBar from "@mui/material/AppBar";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -17,7 +19,7 @@ import {
     CssBaseline,
     Divider,
     Drawer,
-    FormControl,
+    FormControl, Grid,
     IconButton,
     InputLabel,
     List,
@@ -34,7 +36,7 @@ import {Add, Remove} from '@mui/icons-material';
 import {shouldHideColumn} from './Util';
 import ListCellRenderer from "./ListCellRenderer/ListCellRenderer";
 import catalogueStyle from "./Catalogue.module.css";
-import {ValueFormatterParams} from "ag-grid-community/dist/lib/entities/colDef";
+
 
 const config = window?.appConfig
 
@@ -169,9 +171,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
         setFacets(facetsToShow);
     };
 
-    function formatDateTime(params: ValueFormatterParams) {
-        return params.value ? new Date(params.value).toLocaleDateString() : '';
-    }
+
     function toTitleCase(key: string) {
         return key.charAt(0).toUpperCase() + key.slice(1);
     }
@@ -192,10 +192,7 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
                 if (propertyDef?.type === 'array' && propertyDef?.items?.type === 'string') {
                     colDef.cellRenderer = ListCellRenderer;
                 }
-                if (propertyDef?.type === 'string' && propertyDef?.format === "date-time") {
-                    colDef.valueFormatter = formatDateTime;
-                    colDef.filter = 'agDateColumnFilter';
-                }
+
                 return colDef;
             });
         setColumnDefs(newColumnDefs);
@@ -356,146 +353,16 @@ const Catalogue: React.FC<CatalogueProps> = ({schema}) => {
 
     return (
         <>
+            <h1>Hellooo</h1>
+            <DataGridDemo/>
             <Box sx={{display: "flex"}}>
 
-                <CssBaseline/>
-                <AppBar position="fixed" open={open}>
-                    <Toolbar>
-                        <IconButton
-                            color="inherit"
-                            aria-label="open drawer"
-                            onClick={handleDrawerOpen}
-                            edge="start"
-                            sx={{mr: 2, ...(open && {display: "none"})}}
-                        >
-                            <MenuIcon/>
-                        </IconButton>
-                        <Typography variant="h6" noWrap component="div">
-                            Data Catalogue
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
 
-
-                <Drawer sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    "& .MuiDrawer-paper": {
-                        width: drawerWidth,
-                        boxSizing: "border-box",
-                    },
-                }}
-                        variant="persistent"
-                        anchor="left"
-                        open={open}>
-
-
-                    <DrawerHeader>
-                        <IconButton onClick={handleDrawerClose}>Filters
-                            <ChevronLeftIcon/>
-                        </IconButton>
-                    </DrawerHeader>
-
-                    <Divider/>
-
-
-                    <Box>
-
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            mb={2}>
-
-                            <Button variant="text" color="primary" onClick={handleResetAll}>
-                                Reset All
-                            </Button>
-                        </Box>
-
-                        <List>
-                            {facets.map((facet, index) => (
-
-                                <React.Fragment key={facet.label}>
-
-                                    <ListItem button onClick={() => handleToggleFilter(facet.label)}>
-                                        <ListItemText primary={facet.label}/>
-                                        {// @ts-ignore
-                                            openFilters[facet.label] ? (
-                                                <Remove/>
-                                            ) : (
-                                                <Add/>
-                                            )}
-                                    </ListItem>
-
-                                    <Collapse
-                                        in={
-                                            // @ts-ignore
-                                            openFilters[facet.label]}
-                                        timeout="auto"
-                                        unmountOnExit
-                                    >
-                                        {facet.type === "select" && (
-                                            <ListItem sx={{pl: 4}}>
-                                                <FormControl fullWidth>
-                                                    <InputLabel id="demo-simple-select-label">{facet.label}</InputLabel>
-                                                    <Select labelId="demo-simple-select-label"
-                                                            id="demo-simple-select"
-                                                            label={facet.label}
-                                                            name={facet.label}
-                                                            onChange={(event) => externalFilterChanged(event, facet.data_type)}>
-                                                        {facet.options.map((option) => (
-                                                            <MenuItem key={option} value={option}>
-                                                                {option}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                            </ListItem>
-                                        )}
-                                        {facet.type === "checkbox" && (
-                                            <List component="div" disablePadding>
-                                                {facet.options.map((option: string) => (
-                                                    <ListItem key={option} button sx={{pl: 4}}>
-                                                        <Checkbox
-                                                            onChange={(event) => handleCheckboxChange(event, facet.data_type)}
-                                                            name={facet.label}
-                                                            value={option}
-                                                            sx={{
-                                                                "&.Mui-checked": {
-                                                                    color: "red"
-                                                                }
-                                                            }}
-                                                        />
-                                                        <ListItemText primary={option}/>
-                                                    </ListItem>
-                                                ))}
-                                            </List>
-                                        )}
-
-                                    </Collapse>
-                                </React.Fragment>
-
-                            ))}
-                        </List>
-
-                    </Box>
-                </Drawer>
 
                 <Main open={open} className={"ag-theme-alpine " + catalogueStyle.CatalogueGrid}
                       style={{height: '500px', width: '100%'}}>
                     <DrawerHeader/>
-                    <AgGridReact
-                        rowData={rowData}
-                        columnDefs={columnDefs}
-                        ref={gridRef}
-                        pagination={true}
-                        paginationPageSize={10}
-                        editType={'fullRow'}
-                        sideBar={true}
-                        isExternalFilterPresent={isExternalFilterPresent}
-                        doesExternalFilterPass={doesExternalFilterPass}
-                        onRowValueChanged={handleRowValueChanged}
-                    />
+
                 </Main>
 
             </Box>
